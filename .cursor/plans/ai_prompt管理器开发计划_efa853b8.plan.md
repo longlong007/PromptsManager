@@ -67,14 +67,14 @@ isProject: false
 ## 技术栈选择
 
 
-| 层级     | 技术方案                                     |
-| ------ | ---------------------------------------- |
-| 前端框架   | React 18 + TypeScript                    |
-| 跨端方案   | Tauri 2.x (桌面) + Capacitor (移动端)         |
-| 样式方案   | Tailwind CSS + shadcn/ui                 |
-| 云端服务   | Supabase (认证 + PostgreSQL数据库 + 实时同步)     |
-| 状态管理   | Zustand                                  |
-| AI API | OpenAI GPT / Google Gemini (用户自备API Key) |
+| 层级     | 技术方案                                 |
+| ------ | ------------------------------------ |
+| 前端框架   | React 18 + TypeScript                |
+| 跨端方案   | Tauri 2.x (桌面) + Capacitor (移动端)     |
+| 样式方案   | Tailwind CSS + shadcn/ui             |
+| 云端服务   | Supabase (认证 + PostgreSQL数据库 + 实时同步) |
+| 状态管理   | Zustand                              |
+| AI API | DeepSeek (用户自备API Key)               |
 
 
 ## 核心功能模块
