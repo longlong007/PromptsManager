@@ -6,11 +6,10 @@ import { Plus, Edit2, Trash2, ArrowLeft } from 'lucide-react'
 
 export default function SettingsPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const { categories, createCategory, updateCategory, deleteCategory } = usePrompts()
-  
+
   const [apiKey, setApiKey] = useState('')
-  const [aiModel, setAiModel] = useState('gpt-3.5-turbo')
   const [newCategoryName, setNewCategoryName] = useState('')
   const [editingCategory, setEditingCategory] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
@@ -18,21 +17,30 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       navigate('/login')
-      return
     }
-    const stored = localStorage.getItem('ai_api_key')
-    if (stored) setApiKey(stored)
-    const model = localStorage.getItem('ai_model')
-    if (model) setAiModel(model)
-  }, [user, navigate])
+  }, [authLoading, user, navigate])
+
+  useEffect(() => {
+    if (user) {
+      const stored = localStorage.getItem('ai_api_key')
+      if (stored) setApiKey(stored)
+    }
+  }, [user])
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-gray-500">加载中...</div>
+      </div>
+    )
+  }
 
   if (!user) return null
 
   const handleSaveApiKey = () => {
     localStorage.setItem('ai_api_key', apiKey)
-    localStorage.setItem('ai_model', aiModel)
     setSaving(true)
     setTimeout(() => setSaving(false), 500)
   }
@@ -65,7 +73,7 @@ export default function SettingsPage() {
       <nav className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4 h-16">
-            <button 
+            <button
               onClick={() => navigate('/')}
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
             >
@@ -82,7 +90,7 @@ export default function SettingsPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">AI API 设置</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">OpenAI API Key</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">DeepSeek API Key</label>
               <input
                 type="password"
                 value={apiKey}
@@ -90,19 +98,7 @@ export default function SettingsPage() {
                 placeholder="sk-..."
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <p className="text-xs text-gray-500 mt-1">用于 AI 优化 Prompt 功能，费用由您承担</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">AI 模型</label>
-              <select
-                value={aiModel}
-                onChange={(e) => setAiModel(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                <option value="gpt-4">GPT-4</option>
-                <option value="gpt-4-turbo">GPT-4 Turbo</option>
-              </select>
+              <p className="text-xs text-gray-500 mt-1">用于 AI 优化 Prompt 功能，使用 deepseek-chat 模型，费用由您承担</p>
             </div>
             <button
               onClick={handleSaveApiKey}
@@ -116,7 +112,7 @@ export default function SettingsPage() {
 
         <div className="bg-white rounded-xl shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">分类管理</h2>
-          
+
           <div className="flex gap-2 mb-4">
             <input
               type="text"

@@ -3,12 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { usePrompts } from '../contexts/PromptContext'
 import { useAuth } from '../contexts/AuthContext'
 import { Prompt } from '../types'
-import { Copy, Save, Sparkles, ArrowLeft } from 'lucide-react'
+import { Copy, Save, Sparkles, ArrowLeft, Plus, X } from 'lucide-react'
 
 export default function PromptDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { prompts, categories, updatePrompt, createPrompt } = usePrompts()
+  const { prompts, categories, updatePrompt, createPrompt, createCategory } = usePrompts()
   const { user, loading } = useAuth()
 
   const [prompt, setPrompt] = useState<Prompt | null>(null)
@@ -20,8 +20,26 @@ export default function PromptDetailPage() {
   const [saving, setSaving] = useState(false)
   const [aiOptimizing, setAiOptimizing] = useState(false)
   const [apiKey, setApiKey] = useState('')
+  const [showNewCategory, setShowNewCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [creatingCategory, setCreatingCategory] = useState(false)
 
   const isNew = id === 'new'
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return
+    setCreatingCategory(true)
+    const { error } = await createCategory({
+      name: newCategoryName.trim(),
+      parent_id: null,
+      sort_order: categories.length
+    })
+    setCreatingCategory(false)
+    if (!error) {
+      setNewCategoryName('')
+      setShowNewCategory(false)
+    }
+  }
 
   useEffect(() => {
     if (!isNew && id) {
@@ -86,28 +104,40 @@ export default function PromptDetailPage() {
       navigate('/settings')
       return
     }
+    if (!content.trim()) {
+      alert('请先输入 Prompt 内容')
+      return
+    }
+
     setAiOptimizing(true)
+
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
+          model: 'deepseek-chat',
           messages: [{
             role: 'system',
-            content: '你是一个专业的Prompt工程师。请优化用户提供的Prompt，使其更加清晰、具体、有效。'
+            content: '你是一个专业的Prompt工程师。请优化用户提供的Prompt，使其更加清晰、具体，有效。'
           }, {
             role: 'user',
             content
           }]
         })
       })
+
       const data = await response.json()
-      if (data.choices && data.choices[0]) {
+
+      if (response.ok && data.choices && data.choices[0]) {
         setContent(data.choices[0].message.content)
+      } else if (data.error) {
+        alert(`AI 优化失败: ${data.error.message || JSON.stringify(data.error)}`)
+      } else {
+        alert('AI 优化失败: 未知错误')
       }
     } catch (err) {
       console.error('AI optimization failed:', err)
@@ -122,7 +152,7 @@ export default function PromptDetailPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 onClick={() => navigate('/prompts')}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
               >
@@ -161,7 +191,44 @@ export default function PromptDetailPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">分类</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">分类</label>
+                <button
+                  type="button"
+                  onClick={() => setShowNewCategory(!showNewCategory)}
+                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  新建分类
+                </button>
+              </div>
+
+              {showNewCategory && (
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="新分类名称"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
+                  />
+                  <button
+                    onClick={handleCreateCategory}
+                    disabled={creatingCategory || !newCategoryName.trim()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm"
+                  >
+                    添加
+                  </button>
+                  <button
+                    onClick={() => { setShowNewCategory(false); setNewCategoryName('') }}
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+              )}
+
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
