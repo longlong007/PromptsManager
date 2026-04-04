@@ -1,0 +1,230 @@
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { usePrompts } from '../contexts/PromptContext'
+import { useAuth } from '../contexts/AuthContext'
+import { Prompt } from '../types'
+import { Copy, Save, Sparkles, ArrowLeft } from 'lucide-react'
+
+export default function PromptDetailPage() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { prompts, categories, updatePrompt, createPrompt } = usePrompts()
+  const { user, loading } = useAuth()
+
+  const [prompt, setPrompt] = useState<Prompt | null>(null)
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [categoryId, setCategoryId] = useState('')
+  const [tags, setTags] = useState('')
+  const [copied, setCopied] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [aiOptimizing, setAiOptimizing] = useState(false)
+  const [apiKey, setApiKey] = useState('')
+
+  const isNew = id === 'new'
+
+  useEffect(() => {
+    if (!isNew && id) {
+      const found = prompts.find(p => p.id === id)
+      if (found) {
+        setPrompt(found)
+        setTitle(found.title)
+        setContent(found.content)
+        setCategoryId(found.category_id || '')
+        setTags(found.tags.join(', '))
+      }
+    }
+  }, [id, prompts, isNew])
+
+  useEffect(() => {
+    const stored = localStorage.getItem('ai_api_key')
+    if (stored) setApiKey(stored)
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-gray-500">加载中...</div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    navigate('/login')
+    return null
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    const tagList = tags.split(',').map(t => t.trim()).filter(Boolean)
+    const promptData = {
+      title,
+      content,
+      category_id: categoryId || null,
+      tags: tagList,
+      variables: []
+    }
+
+    if (isNew) {
+      await createPrompt(promptData)
+    } else if (prompt) {
+      await updatePrompt(prompt.id, promptData)
+    }
+    setSaving(false)
+    navigate('/prompts')
+  }
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(content)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleAiOptimize = async () => {
+    if (!apiKey) {
+      alert('请先在设置页面配置 API Key')
+      navigate('/settings')
+      return
+    }
+    setAiOptimizing(true)
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [{
+            role: 'system',
+            content: '你是一个专业的Prompt工程师。请优化用户提供的Prompt，使其更加清晰、具体、有效。'
+          }, {
+            role: 'user',
+            content
+          }]
+        })
+      })
+      const data = await response.json()
+      if (data.choices && data.choices[0]) {
+        setContent(data.choices[0].message.content)
+      }
+    } catch (err) {
+      console.error('AI optimization failed:', err)
+      alert('AI 优化失败，请检查 API Key')
+    }
+    setAiOptimizing(false)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => navigate('/prompts')}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                返回
+              </button>
+              <h1 className="text-xl font-bold text-gray-900">
+                {isNew ? '新建 Prompt' : '编辑 Prompt'}
+              </h1>
+            </div>
+            {!isNew && (
+              <button
+                onClick={handleCopy}
+                className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${copied ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              >
+                <Copy className="w-4 h-4" />
+                {copied ? '已复制' : '复制'}
+              </button>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-xl shadow p-6">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">标题</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="给 Prompt 起个名字"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">分类</label>
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">未分类</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">标签（用逗号分隔）</label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="写作, 翻译, 代码..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-gray-700">Prompt 内容</label>
+                <button
+                  onClick={handleAiOptimize}
+                  disabled={aiOptimizing || !content}
+                  className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 disabled:opacity-50 flex items-center gap-1"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {aiOptimizing ? '优化中...' : 'AI 优化'}
+                </button>
+              </div>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={12}
+                placeholder="在这里输入你的 Prompt..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                onClick={() => navigate('/prompts')}
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving || !title || !content}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                {saving ? '保存中...' : '保存'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}

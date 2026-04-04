@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/contexts/authcontext.tsx","./src/contexts/promptcontext.tsx","./src/lib/supabase.ts","./src/pages/dashboardpage.tsx","./src/pages/loginpage.tsx","./src/pages/promptdetailpage.tsx","./src/pages/promptlistpage.tsx","./src/pages/settingspage.tsx","./src/types/index.ts"],"version":"5.9.3"}

@@ -4,34 +4,34 @@ overview: 使用 React + Tauri（桌面端）/ Capacitor（移动端）跨端架
 todos:
   - id: init
     content: 初始化项目结构（pnpm workspaces + 四个应用）
-    status: pending
+    status: completed
   - id: setup-web
     content: 搭建Web应用核心（React + TypeScript + Vite）
-    status: pending
+    status: completed
   - id: setup-ui
     content: 配置UI框架（Tailwind + shadcn/ui）
-    status: pending
+    status: completed
   - id: setup-supabase
     content: 集成Supabase（认证 + 数据库）
-    status: pending
+    status: completed
   - id: implement-auth
     content: 实现用户认证流程
-    status: pending
+    status: completed
   - id: implement-prompt-crud
     content: 实现Prompt CRUD功能
-    status: pending
+    status: completed
   - id: implement-category
     content: 实现分类管理功能
-    status: pending
+    status: completed
   - id: implement-search
     content: 实现搜索和筛选功能
-    status: pending
+    status: completed
   - id: implement-copy
     content: 实现一键复制功能
-    status: pending
+    status: completed
   - id: implement-ai
     content: 实现AI优化Prompt功能
-    status: pending
+    status: completed
   - id: setup-desktop
     content: 搭建Tauri桌面端
     status: pending
