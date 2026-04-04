@@ -66,18 +66,21 @@ isProject: false
 
 ## 技术栈选择
 
-| 层级 | 技术方案 |
-|------|----------|
-| 前端框架 | React 18 + TypeScript |
-| 跨端方案 | Tauri 2.x (桌面) + Capacitor (移动端) |
-| 样式方案 | Tailwind CSS + shadcn/ui |
-| 云端服务 | Supabase (认证 + PostgreSQL数据库 + 实时同步) |
-| 状态管理 | Zustand |
+
+| 层级     | 技术方案                                     |
+| ------ | ---------------------------------------- |
+| 前端框架   | React 18 + TypeScript                    |
+| 跨端方案   | Tauri 2.x (桌面) + Capacitor (移动端)         |
+| 样式方案   | Tailwind CSS + shadcn/ui                 |
+| 云端服务   | Supabase (认证 + PostgreSQL数据库 + 实时同步)     |
+| 状态管理   | Zustand                                  |
 | AI API | OpenAI GPT / Google Gemini (用户自备API Key) |
+
 
 ## 核心功能模块
 
 ### 1. Prompt管理（CRUD）
+
 - 创建Prompt（标题、内容、分类、标签、变量占位符）
 - 编辑Prompt（完整编辑）
 - 删除Prompt（支持批量删除）
@@ -85,17 +88,20 @@ isProject: false
 - 搜索Prompt（全文搜索、分类筛选、标签筛选）
 
 ### 2. 分类管理
+
 - 创建/编辑/删除分类
 - 分类层级（支持二级分类）
 - 拖拽排序
 
 ### 3. 一键复制
+
 - 单个复制
 - 批量复制
 - 复制历史记录
 
 ### 4. AI优化Prompt
-- 调用GPT/Gemini优化Prompt
+
+- 调用Deepseek优化Prompt
 - 支持自定义优化参数
 - 优化历史
 
@@ -154,6 +160,7 @@ prompt-manager/
 ## 开发阶段
 
 ### 第一阶段：核心Web应用
+
 1. 初始化 React + TypeScript + Vite 项目
 2. 配置 Tailwind CSS + shadcn/ui
 3. 集成 Supabase 认证（邮箱/第三方登录）
@@ -162,22 +169,26 @@ prompt-manager/
 6. 实现搜索和筛选
 
 ### 第二阶段：高级功能
+
 1. AI优化Prompt功能
 2. 一键复制功能
 3. 变量占位符系统
 4. 使用统计
 
 ### 第三阶段：跨端扩展
+
 1. Tauri桌面应用封装
 2. Capacitor移动端配置
 3. Android APK打包
 
 ### 第四阶段：微信小程序
+
 1. 初始化微信小程序项目
 2. 对接Supabase后端API
 3. 实现与Web一致的Prompt管理功能
 
 ### 第五阶段：浏览器插件
+
 1. Chrome扩展开发
 2. 快捷键支持
 3. 弹出编辑窗口
