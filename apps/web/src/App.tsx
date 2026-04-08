@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { PromptProvider } from './contexts/PromptContext'
 import LoginPage from './pages/LoginPage'
@@ -9,7 +9,7 @@ import SettingsPage from './pages/SettingsPage'
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <AuthProvider>
         <PromptProvider>
           <Routes>
@@ -22,7 +22,7 @@ function App() {
           </Routes>
         </PromptProvider>
       </AuthProvider>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 

@@ -1,0 +1,237 @@
+# AI Prompt 管理器 - 项目架构图
+
+## 1. 整体架构图
+
+```mermaid
+graph TB
+    subgraph 前端层["前端层 (React 18)"]
+        App[App.tsx<br>根组件]
+        Router[React Router<br>路由管理]
+
+        subgraph Pages["页面组件"]
+            Login[LoginPage<br>登录页]
+            Dashboard[DashboardPage<br>仪表盘]
+            PromptList[PromptListPage<br>Prompt列表]
+            PromptDetail[PromptDetailPage<br>Prompt详情]
+            Settings[SettingsPage<br>设置页]
+        end
+
+        subgraph Contexts["状态管理"]
+            AuthCtx[AuthContext<br>认证状态]
+            PromptCtx[PromptContext<br>Prompt状态]
+        end
+
+        subgraph Lib["工具库"]
+            Supabase[supabase.ts<br>Supabase客户端]
+        end
+    end
+
+    subgraph 后端层["后端层 (Supabase)"]
+        Auth[Supabase Auth<br>用户认证]
+        DB[(PostgreSQL<br>数据库)]
+
+        subgraph Tables["数据表"]
+            Profiles[profiles<br>用户表]
+            Categories[categories<br>分类表]
+            Prompts[prompts<br>Prompt表]
+        end
+    end
+
+    App --> Router
+    Router --> Pages
+    Pages --> Contexts
+    Contexts --> Lib
+    Lib --> Supabase
+    Supabase --> Auth
+    Supabase --> DB
+    Auth --> DB
+```
+
+---
+
+## 2. 组件结构图
+
+```mermaid
+graph TB
+    App --> AuthProvider
+    App --> PromptProvider
+    App --> BrowserRouter
+
+    BrowserRouter --> Routes
+    Routes --> Route1["/login → LoginPage"]
+    Routes --> Route2["/ → DashboardPage"]
+    Routes --> Route3["/prompts → PromptListPage"]
+    Routes --> Route4["/prompts/:id → PromptDetailPage"]
+    Routes --> Route5["/settings → SettingsPage"]
+
+    AuthProvider --> AuthCtx
+    PromptProvider --> PromptCtx
+
+    AuthCtx --> supabase
+    PromptCtx --> supabase
+
+    supabase -.-> Auth
+    supabase -.-> DB
+```
+
+---
+
+## 3. 数据库模型图
+
+```mermaid
+erDiagram
+    profiles {
+        uuid id PK
+        timestamp created_at
+    }
+
+    categories {
+        uuid id PK
+        uuid user_id FK
+        text name
+        uuid parent_id FK
+        integer sort_order
+        timestamp created_at
+    }
+
+    prompts {
+        uuid id PK
+        uuid user_id FK
+        text title
+        text content
+        uuid category_id FK
+        text[] tags
+        jsonb variables
+        integer usage_count
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    profiles ||--o{ categories : "用户拥有"
+    profiles ||--o{ prompts : "用户创建"
+    categories ||--o{ categories : "自关联"
+    categories ||--o{ prompts : "包含"
+```
+
+---
+
+## 4. 数据流图
+
+```mermaid
+flowchart LR
+    subgraph 前端["前端 React"]
+        UI["UI组件<br/>Pages"]
+        State["状态管理<br/>Context"]
+        API["API调用<br/>supabase.ts"]
+    end
+
+    subgraph 请求["HTTP请求"]
+        R1["认证请求"]
+        R2["数据请求"]
+    end
+
+    subgraph Supabase["Supabase"]
+        Auth["Auth<br/>认证服务"]
+        DB["PostgreSQL<br/>数据库"]
+    end
+
+    UI --> State
+    State --> API
+    API --> R1
+    API --> R2
+    R1 --> Auth
+    R2 --> DB
+    Auth --> DB
+```
+
+---
+
+## 5. 状态管理架构
+
+```mermaid
+graph TB
+    subgraph AuthContext["AuthContext"]
+        A1["user: User | null"]
+        A2["loading: boolean"]
+        A3["login()"]
+        A4["logout()"]
+        A5["register()"]
+    end
+
+    subgraph PromptContext["PromptContext"]
+        P1["prompts: Prompt[]"]
+        P2["categories: Category[]"]
+        P3["tags: string[]"]
+        P4["selectedPrompt: Prompt | null"]
+        P5["fetchPrompts()"]
+        P6["createPrompt()"]
+        P7["updatePrompt()"]
+        P8["deletePrompt()"]
+        P9["searchPrompts()"]
+    end
+
+    subgraph SupabaseClient["supabase Client"]
+        S1["URL配置"]
+        S2["Anon Key"]
+        S3["createClient()"]
+    end
+
+    AuthContext -.-> SupabaseClient
+    PromptContext -.-> SupabaseClient
+```
+
+---
+
+## 6. 技术栈总览
+
+```mermaid
+mindmap
+    root((AI Prompt<br/>管理器))
+        前端框架
+            React 18
+            TypeScript 5
+            Vite 5
+        路由管理
+            React Router DOM 6
+        状态管理
+            React Context
+        样式方案
+            Tailwind CSS 3
+            PostCSS
+        图标库
+            Lucide React
+        云端服务
+            Supabase
+            PostgreSQL
+            Auth
+        包管理
+            pnpm 9
+            Monorepo
+```
+
+---
+
+## 7. 文件依赖关系
+
+```mermaid
+graph TD
+    main["main.tsx<br/>入口文件"]
+    App["App.tsx<br/>根组件"]
+    AuthCtx["AuthContext.tsx<br/>认证上下文"]
+    PromptCtx["PromptContext.tsx<br/>Prompt上下文"]
+    supabase["supabase.ts<br/>Supabase客户端"]
+    types["types/index.ts<br/>类型定义"]
+
+    main --> App
+    App --> AuthCtx
+    App --> PromptCtx
+    AuthCtx --> supabase
+    PromptCtx --> supabase
+    supabase --> types
+
+    Login["pages/LoginPage.tsx"] --> AuthCtx
+    Dashboard["pages/DashboardPage.tsx"] --> PromptCtx
+    PromptList["pages/PromptListPage.tsx"] --> PromptCtx
+    PromptDetail["pages/PromptDetailPage.tsx"] --> PromptCtx
+    Settings["pages/SettingsPage.tsx"] --> PromptCtx
+```
