@@ -91,12 +91,9 @@ export default function DashboardPage() {
               >
                 创建新 Prompt
               </button>
-              <button
-                onClick={() => navigate('/settings')}
-                className="w-full py-3 px-4 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-              >
-                设置 API Key
-              </button>
+              <div className="w-full py-3 px-4 border border-dashed border-gray-200 text-gray-400 rounded-lg font-medium text-center">
+                AI 配置已改为后端统一管理
+              </div>
             </div>
           </div>
         </div>

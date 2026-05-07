@@ -3,8 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { usePrompts } from '../contexts/PromptContext'
 import { useAuth } from '../contexts/AuthContext'
 import { Prompt } from '../types'
-import { Copy, Save, Sparkles, ArrowLeft, Plus, X } from 'lucide-react'
-import { optimizePromptWithAI } from '../lib/supabase'
+import { Copy, Save, ArrowLeft, Plus, X, Sparkles } from 'lucide-react'
 
 export default function PromptDetailPage() {
   const { id } = useParams()
@@ -19,7 +18,6 @@ export default function PromptDetailPage() {
   const [tags, setTags] = useState('')
   const [copied, setCopied] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [aiOptimizing, setAiOptimizing] = useState(false)
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [creatingCategory, setCreatingCategory] = useState(false)
@@ -54,9 +52,6 @@ export default function PromptDetailPage() {
     }
   }, [id, prompts, isNew])
 
-  useEffect(() => {
-    // No longer need to read API key from localStorage - it's handled server-side
-  }, [])
 
   if (loading) {
     return (
@@ -95,24 +90,6 @@ export default function PromptDetailPage() {
     await navigator.clipboard.writeText(content)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }
-
-  const handleAiOptimize = async () => {
-    if (!content.trim()) {
-      alert('请先输入 Prompt 内容')
-      return
-    }
-
-    setAiOptimizing(true)
-
-    const { optimized, error } = await optimizePromptWithAI(content)
-
-    if (error) {
-      alert(error)
-    } else if (optimized) {
-      setContent(optimized)
-    }
-    setAiOptimizing(false)
   }
 
   return (
@@ -225,12 +202,12 @@ export default function PromptDetailPage() {
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-gray-700">Prompt 内容</label>
                 <button
-                  onClick={handleAiOptimize}
-                  disabled={aiOptimizing || !content}
-                  className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 disabled:opacity-50 flex items-center gap-1"
+                  onClick={() => {}}
+                  disabled
+                  className="px-3 py-1 text-sm bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed flex items-center gap-1"
                 >
                   <Sparkles className="w-4 h-4" />
-                  {aiOptimizing ? '优化中...' : 'AI 优化'}
+                  AI 优化已移除
                 </button>
               </div>
               <textarea
