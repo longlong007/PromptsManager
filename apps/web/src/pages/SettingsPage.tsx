@@ -9,25 +9,16 @@ export default function SettingsPage() {
   const { user, loading: authLoading } = useAuth()
   const { categories, createCategory, updateCategory, deleteCategory } = usePrompts()
 
-  const [apiKey, setApiKey] = useState('')
   const [newCategoryName, setNewCategoryName] = useState('')
   const [editingCategory, setEditingCategory] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login')
     }
   }, [authLoading, user, navigate])
-
-  useEffect(() => {
-    if (user) {
-      const stored = localStorage.getItem('ai_api_key')
-      if (stored) setApiKey(stored)
-    }
-  }, [user])
 
   if (authLoading) {
     return (
@@ -38,12 +29,6 @@ export default function SettingsPage() {
   }
 
   if (!user) return null
-
-  const handleSaveApiKey = () => {
-    localStorage.setItem('ai_api_key', apiKey)
-    setSaving(true)
-    setTimeout(() => setSaving(false), 500)
-  }
 
   const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return
@@ -86,30 +71,6 @@ export default function SettingsPage() {
       </nav>
 
       <main className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">AI API 设置</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">DeepSeek API Key</label>
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="sk-..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">用于 AI 优化 Prompt 功能，使用 deepseek-chat 模型，费用由您承担</p>
-            </div>
-            <button
-              onClick={handleSaveApiKey}
-              disabled={saving}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            >
-              {saving ? '已保存' : '保存设置'}
-            </button>
-          </div>
-        </div>
-
         <div className="bg-white rounded-xl shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">分类管理</h2>
 

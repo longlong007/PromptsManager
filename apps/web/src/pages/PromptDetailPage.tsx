@@ -4,6 +4,7 @@ import { usePrompts } from '../contexts/PromptContext'
 import { useAuth } from '../contexts/AuthContext'
 import { Prompt } from '../types'
 import { Copy, Save, Sparkles, ArrowLeft, Plus, X } from 'lucide-react'
+import { optimizePromptWithAI } from '../lib/supabase'
 
 export default function PromptDetailPage() {
   const { id } = useParams()
@@ -19,7 +20,6 @@ export default function PromptDetailPage() {
   const [copied, setCopied] = useState(false)
   const [saving, setSaving] = useState(false)
   const [aiOptimizing, setAiOptimizing] = useState(false)
-  const [apiKey, setApiKey] = useState('')
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [creatingCategory, setCreatingCategory] = useState(false)
@@ -55,8 +55,7 @@ export default function PromptDetailPage() {
   }, [id, prompts, isNew])
 
   useEffect(() => {
-    const stored = localStorage.getItem('ai_api_key')
-    if (stored) setApiKey(stored)
+    // No longer need to read API key from localStorage - it's handled server-side
   }, [])
 
   if (loading) {
@@ -99,11 +98,6 @@ export default function PromptDetailPage() {
   }
 
   const handleAiOptimize = async () => {
-    if (!apiKey) {
-      alert('请先在设置页面配置 API Key')
-      navigate('/settings')
-      return
-    }
     if (!content.trim()) {
       alert('请先输入 Prompt 内容')
       return
@@ -111,37 +105,12 @@ export default function PromptDetailPage() {
 
     setAiOptimizing(true)
 
-    try {
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [{
-            role: 'system',
-            content: '你是一个专业的Prompt工程师。请优化用户提供的Prompt，使其更加清晰、具体，有效。'
-          }, {
-            role: 'user',
-            content
-          }]
-        })
-      })
+    const { optimized, error } = await optimizePromptWithAI(content)
 
-      const data = await response.json()
-
-      if (response.ok && data.choices && data.choices[0]) {
-        setContent(data.choices[0].message.content)
-      } else if (data.error) {
-        alert(`AI 优化失败: ${data.error.message || JSON.stringify(data.error)}`)
-      } else {
-        alert('AI 优化失败: 未知错误')
-      }
-    } catch (err) {
-      console.error('AI optimization failed:', err)
-      alert('AI 优化失败，请检查 API Key')
+    if (error) {
+      alert(error)
+    } else if (optimized) {
+      setContent(optimized)
     }
     setAiOptimizing(false)
   }
