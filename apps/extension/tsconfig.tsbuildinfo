@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/browser.ts","./src/extension.d.ts","./src/main.tsx","./src/manifest.ts","./src/mockdata.ts","./src/runtime.ts","./src/storage.ts","./src/store.ts","./src/supabase.ts","./src/types.ts","./src/usepromptdata.ts"],"version":"5.9.3"}

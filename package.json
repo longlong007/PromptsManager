@@ -8,9 +8,11 @@
     "build:web": "pnpm --filter web build",
     "dev:desktop": "pnpm --filter desktop dev",
     "dev:mobile": "pnpm --filter mobile dev",
-    "build:mobile": "pnpm --filter mobile build"
+    "build:mobile": "pnpm --filter mobile build",
+    "dev:extension": "pnpm --filter extension dev",
+    "build:extension": "pnpm --filter extension build"
   },
-  " workspaces": [
+  "workspaces": [
     "apps/*",
     "packages/*"
   ],
