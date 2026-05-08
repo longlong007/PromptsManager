@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Copy, Sparkles, FolderOpen, Search, Plus, Settings2, RefreshCw, Trash2, PenSquare, LogIn, RotateCw, Pencil, Save } from 'lucide-react'
 import { usePromptData } from './usePromptData'
 import { getSessionToken, optimizePromptWithAI } from './supabase'
@@ -45,12 +45,17 @@ function App() {
   const [authFormLoading, setAuthFormLoading] = useState(false)
 
   const [isEditingPrompt, setIsEditingPrompt] = useState(false)
+  /** 进入编辑时固定的 id，避免筛选条件导致 selectedPrompt 错指；保存只认此 id */
+  const [editTargetId, setEditTargetId] = useState<string | null>(null)
+  const [editSaving, setEditSaving] = useState(false)
   const [editDraft, setEditDraft] = useState({
     title: '',
     content: '',
     categoryId: '',
     tagsInput: '',
   })
+
+  const prevSelectedPromptIdRef = useRef<string | null>(selectedPromptId)
 
   const filteredPrompts = useMemo(() => {
     return prompts.filter((prompt) => {
@@ -61,13 +66,22 @@ function App() {
     })
   }, [prompts, query, categoryId, tag])
 
-  const selectedPrompt = filteredPrompts.find((item) => item.id === selectedPromptId) ?? filteredPrompts[0]
+  const effectiveSelectedId = selectedPromptId ?? filteredPrompts[0]?.id ?? null
+  const selectedPrompt =
+    effectiveSelectedId ? prompts.find((p) => p.id === effectiveSelectedId) ?? null : null
 
   useEffect(() => {
-    setIsEditingPrompt(false)
-  }, [selectedPrompt?.id])
+    const prev = prevSelectedPromptIdRef.current
+    prevSelectedPromptIdRef.current = selectedPromptId
+    if (prev !== null && selectedPromptId !== null && prev !== selectedPromptId) {
+      setIsEditingPrompt(false)
+      setEditTargetId(null)
+    }
+  }, [selectedPromptId])
 
   function beginEditPrompt(prompt: Prompt) {
+    setSelectedPromptId(prompt.id)
+    setEditTargetId(prompt.id)
     setEditDraft({
       title: prompt.title,
       content: prompt.content,
@@ -79,6 +93,7 @@ function App() {
 
   function cancelEditPrompt() {
     setIsEditingPrompt(false)
+    setEditTargetId(null)
   }
 
   function parseTagsInput(raw: string): string[] {
@@ -88,24 +103,33 @@ function App() {
       .filter(Boolean)
   }
 
-  async function saveEditPrompt(promptId: string) {
+  async function saveEditPrompt() {
+    if (!editTargetId) {
+      setActionState('无法保存：请关闭后重新点「编辑」')
+      return
+    }
     const title = editDraft.title.trim()
     const content = editDraft.content.trim()
     if (!title || !content) {
       setActionState('标题和内容不能为空')
       return
     }
+    setEditSaving(true)
+    setActionState('正在保存…')
     try {
-      await updatePrompt(promptId, {
+      await updatePrompt(editTargetId, {
         title,
         content,
         categoryId: editDraft.categoryId || null,
         tags: parseTagsInput(editDraft.tagsInput),
       })
       setIsEditingPrompt(false)
+      setEditTargetId(null)
       setActionState('已保存修改')
     } catch (e) {
       setActionState(e instanceof Error ? e.message : '保存失败')
+    } finally {
+      setEditSaving(false)
     }
   }
 
@@ -342,11 +366,11 @@ function App() {
             <p>支持复制、AI 优化和 CRUD；数据保存在你的账号下。</p>
           </div>
           <div className="header-actions">
-            <button type="button" className="action-btn" onClick={() => handleCopy(selectedPrompt)} disabled={isEditingPrompt}><Copy size={16} /> 复制</button>
+            <button type="button" className="action-btn" onClick={() => handleCopy(selectedPrompt ?? undefined)} disabled={isEditingPrompt}><Copy size={16} /> 复制</button>
             <button type="button" className="action-btn" onClick={() => selectedPrompt && beginEditPrompt(selectedPrompt)} disabled={!selectedPrompt || isEditingPrompt}>
               <Pencil size={16} /> 编辑
             </button>
-            <button type="button" className="action-btn primary" onClick={() => handleOptimize(selectedPrompt)} disabled={isEditingPrompt}><Sparkles size={16} /> AI 优化</button>
+            <button type="button" className="action-btn primary" onClick={() => handleOptimize(selectedPrompt ?? undefined)} disabled={isEditingPrompt}><Sparkles size={16} /> AI 优化</button>
           </div>
         </div>
 
@@ -355,9 +379,10 @@ function App() {
             {isEditingPrompt ? (
               <form
                 className="prompt-edit-form"
+                noValidate
                 onSubmit={(e) => {
                   e.preventDefault()
-                  void saveEditPrompt(selectedPrompt.id)
+                  void saveEditPrompt()
                 }}
               >
                 <label className="edit-field">
@@ -366,7 +391,6 @@ function App() {
                     value={editDraft.title}
                     onChange={(e) => setEditDraft((d) => ({ ...d, title: e.target.value }))}
                     autoComplete="off"
-                    required
                   />
                 </label>
                 <label className="edit-field">
@@ -375,7 +399,6 @@ function App() {
                     value={editDraft.content}
                     onChange={(e) => setEditDraft((d) => ({ ...d, content: e.target.value }))}
                     rows={10}
-                    required
                   />
                 </label>
                 <label className="edit-field">
@@ -402,10 +425,15 @@ function App() {
                   />
                 </label>
                 <div className="toolbar edit-actions">
-                  <button type="submit" className="action-btn primary">
-                    <Save size={16} /> 保存
+                  <button
+                    type="submit"
+                    className="action-btn primary"
+                    disabled={editSaving}
+                  >
+                    <Save size={16} />
+                    {editSaving ? '保存中…' : '保存'}
                   </button>
-                  <button type="button" className="action-btn" onClick={cancelEditPrompt}>
+                  <button type="button" className="action-btn" onClick={cancelEditPrompt} disabled={editSaving}>
                     取消
                   </button>
                 </div>
