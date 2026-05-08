@@ -5,7 +5,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-const SUPABASE_EDGE_FUNCTION_URL = 'https://your-project.supabase.co/functions/v1/optimize-prompt'
+const SUPABASE_EDGE_FUNCTION_URL = 'https://ohzaxwvqwvufjmymfunl.supabase.co/functions/v1/optimize-prompt'
 
 export async function optimizePromptWithAI(content: string): Promise<{ optimized: string | null; error: string | null }> {
   const { data: { session } } = await supabase.auth.getSession()
