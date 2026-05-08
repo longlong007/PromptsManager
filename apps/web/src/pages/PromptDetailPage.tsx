@@ -4,6 +4,7 @@ import { usePrompts } from '../contexts/PromptContext'
 import { useAuth } from '../contexts/AuthContext'
 import { Prompt } from '../types'
 import { Copy, Save, ArrowLeft, Plus, X, Sparkles } from 'lucide-react'
+import { optimizePromptWithAI } from '../lib/supabase'
 
 export default function PromptDetailPage() {
   const { id } = useParams()
@@ -18,6 +19,7 @@ export default function PromptDetailPage() {
   const [tags, setTags] = useState('')
   const [copied, setCopied] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [aiOptimizing, setAiOptimizing] = useState(false)
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [creatingCategory, setCreatingCategory] = useState(false)
@@ -90,6 +92,23 @@ export default function PromptDetailPage() {
     await navigator.clipboard.writeText(content)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleAiOptimize = async () => {
+    if (!content.trim()) {
+      alert('请先输入 Prompt 内容')
+      return
+    }
+
+    setAiOptimizing(true)
+    const { optimized, error } = await optimizePromptWithAI(content)
+    setAiOptimizing(false)
+
+    if (error) {
+      alert(error)
+    } else if (optimized) {
+      setContent(optimized)
+    }
   }
 
   return (
@@ -202,12 +221,13 @@ export default function PromptDetailPage() {
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-gray-700">Prompt 内容</label>
                 <button
-                  onClick={() => {}}
-                  disabled
-                  className="px-3 py-1 text-sm bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed flex items-center gap-1"
+                  type="button"
+                  onClick={() => void handleAiOptimize()}
+                  disabled={aiOptimizing || !content.trim()}
+                  className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                 >
                   <Sparkles className="w-4 h-4" />
-                  AI 优化已移除
+                  {aiOptimizing ? '优化中...' : 'AI 优化'}
                 </button>
               </div>
               <textarea
