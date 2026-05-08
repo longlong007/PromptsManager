@@ -1,2 +1,4 @@
 node_modules
 .env
+apps/extension/dist
+apps/extension/node_modules

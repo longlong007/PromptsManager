@@ -1,12 +1,39 @@
 import { useMemo, useState } from 'react'
 import { Copy, Sparkles, FolderOpen, Search, Plus, Settings2, RefreshCw, Trash2, PenSquare, LogIn, RotateCw } from 'lucide-react'
 import { usePromptData } from './usePromptData'
-import { getSessionToken, optimizePromptWithAI, supabase } from './supabase'
-import { runtime } from './runtime'
+import { getSessionToken, optimizePromptWithAI } from './supabase'
 import type { Prompt } from './types'
 
+function GoogleIcon() {
+  return (
+    <svg className="google-icon" width={18} height={18} viewBox="0 0 24 24" aria-hidden>
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+    </svg>
+  )
+}
+
 function App() {
-  const { prompts, categories, authState, ready, addPrompt, addCategory, deletePrompt, updatePrompt, saveAuth, syncFromRemote } = usePromptData()
+  const {
+    prompts,
+    categories,
+    session,
+    user,
+    authLoading,
+    ready,
+    addPrompt,
+    addCategory,
+    deletePrompt,
+    updatePrompt,
+    signIn,
+    signUp,
+    signOut,
+    signInWithGoogle,
+    syncFromRemote,
+  } = usePromptData()
+
   const [query, setQuery] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [tag, setTag] = useState('')
@@ -14,7 +41,8 @@ function App() {
   const [actionState, setActionState] = useState('')
   const [authEmail, setAuthEmail] = useState('')
   const [authPassword, setAuthPassword] = useState('')
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
+  const [isLogin, setIsLogin] = useState(true)
+  const [authFormLoading, setAuthFormLoading] = useState(false)
 
   const filteredPrompts = useMemo(() => {
     return prompts.filter((prompt) => {
@@ -69,42 +97,113 @@ function App() {
     setActionState('已删除 Prompt')
   }
 
-  async function handleSupabaseAuth() {
-    if (!runtime.hasSupabaseConfig) {
-      setActionState('请先在环境变量中配置 Supabase')
-      return
+  async function handleAccountAuth(e: React.FormEvent) {
+    e.preventDefault()
+    setAuthFormLoading(true)
+    setActionState('')
+    const result = isLogin ? await signIn(authEmail, authPassword) : await signUp(authEmail, authPassword)
+    if (result.error) {
+      setActionState(result.error.message)
+    } else if (!isLogin) {
+      setActionState('注册成功，请查收验证邮件')
+    } else {
+      setActionState('登录成功')
     }
+    setAuthFormLoading(false)
+  }
 
-    setActionState('正在处理 Supabase 登录...')
-    const fn = authMode === 'signin' ? supabase.auth.signInWithPassword : supabase.auth.signUp
-    const { data, error } = await fn({ email: authEmail, password: authPassword })
-
+  async function handleGoogleAuth() {
+    setAuthFormLoading(true)
+    setActionState('正在打开 Google 授权...')
+    const { error } = await signInWithGoogle()
     if (error) {
       setActionState(error.message)
-      return
+    } else {
+      setActionState('登录成功')
     }
-
-    await saveAuth({
-      accessToken: data.session?.access_token ?? null,
-      userEmail: data.user?.email ?? authEmail,
-    })
-
-    setActionState(authMode === 'signin' ? '登录成功' : '注册成功，请检查邮箱')
+    setAuthFormLoading(false)
   }
 
   async function handleRefreshRemote() {
     const accessToken = await getSessionToken()
     if (!accessToken) {
-      setActionState(runtime.hasSupabaseConfig ? '请先登录 Supabase' : 'Supabase 未配置')
+      setActionState('请先登录')
       return
     }
 
     try {
       await syncFromRemote()
-      setActionState('云端数据已同步')
+      setActionState('已从云端同步')
     } catch (error) {
       setActionState(error instanceof Error ? error.message : '同步失败')
     }
+  }
+
+  async function handleSignOut() {
+    await signOut()
+    setActionState('已退出登录')
+  }
+
+  if (authLoading || !ready) {
+    return (
+      <div className="app-shell app-center">
+        <p className="muted">正在加载...</p>
+      </div>
+    )
+  }
+
+  if (!session) {
+    return (
+      <div className="app-shell login-shell">
+        <div className="login-card">
+          <div className="brand">Prompt Manager</div>
+          <p className="muted">登录后与网页端共用账号与云端数据</p>
+
+          <form className="login-form" onSubmit={handleAccountAuth}>
+            <div className="search-box">
+              <LogIn size={16} />
+              <input
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                placeholder="邮箱"
+                type="email"
+                required
+                autoComplete="email"
+              />
+            </div>
+            <div className="search-box" style={{ marginTop: 12 }}>
+              <LogIn size={16} />
+              <input
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                placeholder="密码"
+                type="password"
+                required
+                minLength={6}
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
+              />
+            </div>
+            <button type="submit" className="action-btn primary login-submit" disabled={authFormLoading}>
+              {authFormLoading ? '处理中...' : isLogin ? '登录' : '注册'}
+            </button>
+          </form>
+
+          <button type="button" className="action-btn google-btn" onClick={handleGoogleAuth} disabled={authFormLoading}>
+            <GoogleIcon />
+            使用 Google 登录
+          </button>
+
+          <p className="login-switch muted">
+            {isLogin ? '还没有账号？' : '已有账号？'}
+            <button type="button" className="link-btn" onClick={() => setIsLogin(!isLogin)}>
+              {isLogin ? '立即注册' : '去登录'}
+            </button>
+          </p>
+
+          {actionState ? <p className="login-status">{actionState}</p> : null}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -112,7 +211,13 @@ function App() {
       <aside className="sidebar">
         <div>
           <div className="brand">AI Prompt Manager</div>
-          <p className="muted">浏览器插件侧边栏，已接入本地数据与 Supabase 优化入口。</p>
+          <p className="muted">浏览器插件侧边栏，数据与 Prompt Manager 网页端同步。</p>
+          <div className="account-bar">
+            <span className="account-email">{user?.email ?? ''}</span>
+            <button type="button" className="link-btn" onClick={handleSignOut}>
+              退出
+            </button>
+          </div>
         </div>
 
         <div className="toolbar">
@@ -155,33 +260,16 @@ function App() {
           ))}
         </div>
 
-        <section className="detail-card" style={{ marginTop: 16 }}>
-          <h2>Supabase 登录</h2>
-          <p>{authState.userEmail ? `当前账号：${authState.userEmail}` : '尚未登录'}</p>
-          <div className="search-box" style={{ marginTop: 12 }}>
-            <LogIn size={16} />
-            <input value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} placeholder="邮箱" />
-          </div>
-          <div className="search-box" style={{ marginTop: 12 }}>
-            <LogIn size={16} />
-            <input value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} placeholder="密码" type="password" />
-          </div>
-          <div className="toolbar" style={{ marginTop: 12 }}>
-            <button className="action-btn" onClick={() => setAuthMode('signin')}>切换登录</button>
-            <button className="action-btn" onClick={() => setAuthMode('signup')}>切换注册</button>
-            <button className="action-btn primary" onClick={handleSupabaseAuth}>提交</button>
-          </div>
-          <div className="toolbar" style={{ marginTop: 12 }}>
-            <button className="action-btn" onClick={handleRefreshRemote}><RotateCw size={16} /> 同步远端</button>
-          </div>
-        </section>
+        <div className="toolbar" style={{ marginTop: 12 }}>
+          <button className="action-btn" onClick={handleRefreshRemote}><RotateCw size={16} /> 同步云端</button>
+        </div>
       </aside>
 
       <main className="content-panel">
         <div className="content-header">
           <div>
             <h1>Prompt 详情</h1>
-            <p>支持复制、AI 优化和后续的 CRUD 操作。</p>
+            <p>支持复制、AI 优化和 CRUD；数据保存在你的账号下。</p>
           </div>
           <div className="header-actions">
             <button className="action-btn" onClick={() => handleCopy(selectedPrompt)}><Copy size={16} /> 复制</button>
@@ -219,7 +307,7 @@ function App() {
 
         <section className="detail-card">
           <h2>状态</h2>
-          <p>{ready ? actionState || '数据已就绪，可以开始测试。' : '正在加载本地数据...'}</p>
+          <p>{actionState || '数据已就绪。'}</p>
         </section>
       </main>
     </div>

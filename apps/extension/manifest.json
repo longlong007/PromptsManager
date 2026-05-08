@@ -11,6 +11,6 @@
     "default_path": "sidepanel.html"
   },
   "options_page": "options.html",
-  "permissions": ["storage", "sidePanel", "clipboardWrite"],
+  "permissions": ["storage", "sidePanel", "clipboardWrite", "identity"],
   "host_permissions": ["https://*.supabase.co/*"]
 }

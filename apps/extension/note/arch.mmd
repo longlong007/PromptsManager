@@ -1,0 +1,77 @@
+%% apps/extension 架构简图（Mermaid）
+%% 可在支持 Mermaid 的编辑器或 VS Code 插件中预览；或粘贴到文档中并用 ```mermaid 包裹
+
+flowchart TB
+  subgraph Build["构建（Vite）"]
+    Vite["vite.config.ts\nReact + manifestPlugin"]
+    Entries["多入口 HTML\npopup / sidepanel / options"]
+    Dist["dist/\nmanifest + 打包资源"]
+    Vite --> Entries
+    Vite --> Dist
+  end
+
+  subgraph Chrome["Chrome 扩展 MV3"]
+    Manifest["manifest.json\nstorage · sidePanel · clipboardWrite\nhost: supabase.co"]
+    Dist --> Manifest
+  end
+
+  Manifest -.->|"注册入口"| Entry
+
+  subgraph Entry["页面入口（同源 SPA）"]
+    Popup["popup.html"]
+    Side["sidepanel.html"]
+    Opt["options.html"]
+    Main["main.tsx → App.tsx"]
+    Popup --> Main
+    Side --> Main
+    Opt --> Main
+  end
+
+  subgraph UI["界面与交互"]
+    App["App.tsx\n列表 / 搜索筛选 / 复制 / AI 优化 / 登录"]
+    Main --> App
+  end
+
+  subgraph Data["数据与同步"]
+    Hook["usePromptData\n引导 + 本地/远程协调"]
+    Store["store.ts（Zustand，当前主流程未强制使用）"]
+    App --> Hook
+    App -.-> Store
+  end
+
+  subgraph Local["本地持久化"]
+    Storage["storage.ts\nchrome.storage.local"]
+    Mock["mockData.ts\n首轮空库种子数据"]
+    Hook --> Storage
+    Hook --> Mock
+  end
+
+  subgraph Remote["远端（Supabase）"]
+    SB["supabase.ts\n客户端 + CRUD/sync + optimizePromptWithAI"]
+    RT["runtime.ts\nVITE_* 与默认值"]
+    Hook --> SB
+    App --> SB
+    SB --> RT
+  end
+
+  subgraph Ext["外围模块"]
+    Types["types.ts"]
+    ExtTypes["extension.d.ts"]
+    BrowserUtil["browser.ts（环境探测，可随时接入）"]
+    ManifestTs["manifest.ts（常量，可与 JSON 对齐）"]
+    SB --- Types
+    Storage --- Types
+    Hook --- Types
+    App --- Types
+  end
+
+  subgraph Cloud["Supabase 云端"]
+    Auth["Auth 会话 JWT"]
+    DB[("Prompt / Category\n等表 · RLS")]
+    Fn["Edge Function\noptimize-prompt"]
+    SB --> Auth
+    SB --> DB
+    SB --> Fn
+  end
+
+  Build -.->|"pnpm build"| Chrome

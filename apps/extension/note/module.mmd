@@ -1,0 +1,46 @@
+%% apps/extension 模块依赖图（基于 src/*.ts[x] 的相对路径 import）
+%% 不包含 node_modules；styles.css / extension.d.ts 未作为模块节点绘出
+
+flowchart TB
+  subgraph NPM["npm 依赖（经各文件 import，不单列边）"]
+    direction LR
+    R["react"]
+    LU["lucide-react"]
+    ZU["zustand"]
+    SB_JS["@supabase/supabase-js"]
+  end
+
+  main[["main.tsx"]] --> App[["App.tsx"]]
+
+  App --> Hook[["usePromptData.ts"]]
+  App --> SB[["supabase.ts"]]
+  App --> RT[["runtime.ts"]]
+  App --> TY[["types.ts"]]
+
+  Hook --> Mock[["mockData.ts"]]
+  Hook --> Sto[["storage.ts"]]
+  Hook --> SB
+  Hook --> TY
+
+  Mock --> TY
+  Sto --> TY
+
+  SB --> RT
+  SB --> TY
+
+  Zust[["store.ts"]] --> TY
+
+  subgraph idle["暂无项目内引用"]
+    Br[["browser.ts"]]
+    Man[["manifest.ts"]]
+  end
+
+  App -.-> R
+  App -.-> LU
+  main -.-> R
+  Hook -.-> R
+  Zust -.-> ZU
+  SB -.-> SB_JS
+
+  classDef hub fill:#f4f4f5,stroke:#71717a
+  class TY hub

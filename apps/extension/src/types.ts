@@ -18,8 +18,3 @@ export interface PromptFilters {
   categoryId: string
   tag: string
 }
-
-export interface AuthState {
-  accessToken: string | null
-  userEmail: string | null
-}
