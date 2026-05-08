@@ -153,6 +153,45 @@ button, input, select {
   line-height: 1.7;
 }
 
+.prompt-edit-form {
+  display: grid;
+  gap: 14px;
+}
+
+.prompt-edit-form .edit-field {
+  display: grid;
+  gap: 6px;
+}
+
+.prompt-edit-form .edit-field > span {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.prompt-edit-form input,
+.prompt-edit-form select,
+.prompt-edit-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.8);
+  color: #e5eefb;
+  outline: none;
+}
+
+.prompt-edit-form textarea {
+  resize: vertical;
+  min-height: 160px;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.prompt-edit-form .edit-actions {
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
 .tag {
   padding: 6px 10px;
   border-radius: 999px;

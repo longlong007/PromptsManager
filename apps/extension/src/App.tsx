@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Copy, Sparkles, FolderOpen, Search, Plus, Settings2, RefreshCw, Trash2, PenSquare, LogIn, RotateCw } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Copy, Sparkles, FolderOpen, Search, Plus, Settings2, RefreshCw, Trash2, PenSquare, LogIn, RotateCw, Pencil, Save } from 'lucide-react'
 import { usePromptData } from './usePromptData'
 import { getSessionToken, optimizePromptWithAI } from './supabase'
 import type { Prompt } from './types'
@@ -44,6 +44,14 @@ function App() {
   const [isLogin, setIsLogin] = useState(true)
   const [authFormLoading, setAuthFormLoading] = useState(false)
 
+  const [isEditingPrompt, setIsEditingPrompt] = useState(false)
+  const [editDraft, setEditDraft] = useState({
+    title: '',
+    content: '',
+    categoryId: '',
+    tagsInput: '',
+  })
+
   const filteredPrompts = useMemo(() => {
     return prompts.filter((prompt) => {
       const matchesQuery = !query || prompt.title.includes(query) || prompt.content.includes(query)
@@ -54,6 +62,52 @@ function App() {
   }, [prompts, query, categoryId, tag])
 
   const selectedPrompt = filteredPrompts.find((item) => item.id === selectedPromptId) ?? filteredPrompts[0]
+
+  useEffect(() => {
+    setIsEditingPrompt(false)
+  }, [selectedPrompt?.id])
+
+  function beginEditPrompt(prompt: Prompt) {
+    setEditDraft({
+      title: prompt.title,
+      content: prompt.content,
+      categoryId: prompt.categoryId ?? '',
+      tagsInput: prompt.tags.join(', '),
+    })
+    setIsEditingPrompt(true)
+  }
+
+  function cancelEditPrompt() {
+    setIsEditingPrompt(false)
+  }
+
+  function parseTagsInput(raw: string): string[] {
+    return raw
+      .split(/[,，]/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+  }
+
+  async function saveEditPrompt(promptId: string) {
+    const title = editDraft.title.trim()
+    const content = editDraft.content.trim()
+    if (!title || !content) {
+      setActionState('标题和内容不能为空')
+      return
+    }
+    try {
+      await updatePrompt(promptId, {
+        title,
+        content,
+        categoryId: editDraft.categoryId || null,
+        tags: parseTagsInput(editDraft.tagsInput),
+      })
+      setIsEditingPrompt(false)
+      setActionState('已保存修改')
+    } catch (e) {
+      setActionState(e instanceof Error ? e.message : '保存失败')
+    }
+  }
 
   async function handleCopy(prompt?: Prompt) {
     if (!prompt) return
@@ -288,28 +342,104 @@ function App() {
             <p>支持复制、AI 优化和 CRUD；数据保存在你的账号下。</p>
           </div>
           <div className="header-actions">
-            <button className="action-btn" onClick={() => handleCopy(selectedPrompt)}><Copy size={16} /> 复制</button>
-            <button className="action-btn primary" onClick={() => handleOptimize(selectedPrompt)}><Sparkles size={16} /> AI 优化</button>
+            <button type="button" className="action-btn" onClick={() => handleCopy(selectedPrompt)} disabled={isEditingPrompt}><Copy size={16} /> 复制</button>
+            <button type="button" className="action-btn" onClick={() => selectedPrompt && beginEditPrompt(selectedPrompt)} disabled={!selectedPrompt || isEditingPrompt}>
+              <Pencil size={16} /> 编辑
+            </button>
+            <button type="button" className="action-btn primary" onClick={() => handleOptimize(selectedPrompt)} disabled={isEditingPrompt}><Sparkles size={16} /> AI 优化</button>
           </div>
         </div>
 
         {selectedPrompt ? (
           <section className="detail-card">
-            <h2>{selectedPrompt.title}</h2>
-            <p>{selectedPrompt.content}</p>
-            <div className="tag-row">
-              {selectedPrompt.tags.map((item) => (
-                <span key={item} className="tag">#{item}</span>
-              ))}
-            </div>
-            <div className="detail-footer">
-              <span>最近更新：{new Date(selectedPrompt.updatedAt).toLocaleString('zh-CN')}</span>
-            </div>
-            <div className="toolbar" style={{ marginTop: 16 }}>
-              <button className="action-btn" onClick={() => handleCopy(selectedPrompt)}><Copy size={16} /> 复制内容</button>
-              <button className="action-btn" onClick={() => handleOptimize(selectedPrompt)}><PenSquare size={16} /> 优化内容</button>
-              <button className="action-btn" onClick={() => handleDelete(selectedPrompt)}><Trash2 size={16} /> 删除</button>
-            </div>
+            {isEditingPrompt ? (
+              <form
+                className="prompt-edit-form"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  void saveEditPrompt(selectedPrompt.id)
+                }}
+              >
+                <label className="edit-field">
+                  <span>标题</span>
+                  <input
+                    value={editDraft.title}
+                    onChange={(e) => setEditDraft((d) => ({ ...d, title: e.target.value }))}
+                    autoComplete="off"
+                    required
+                  />
+                </label>
+                <label className="edit-field">
+                  <span>内容</span>
+                  <textarea
+                    value={editDraft.content}
+                    onChange={(e) => setEditDraft((d) => ({ ...d, content: e.target.value }))}
+                    rows={10}
+                    required
+                  />
+                </label>
+                <label className="edit-field">
+                  <span>分类</span>
+                  <select
+                    value={editDraft.categoryId}
+                    onChange={(e) => setEditDraft((d) => ({ ...d, categoryId: e.target.value }))}
+                  >
+                    <option value="">未分类</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="edit-field">
+                  <span>标签（逗号分隔）</span>
+                  <input
+                    value={editDraft.tagsInput}
+                    onChange={(e) => setEditDraft((d) => ({ ...d, tagsInput: e.target.value }))}
+                    placeholder="例如：写作, 代码"
+                    autoComplete="off"
+                  />
+                </label>
+                <div className="toolbar edit-actions">
+                  <button type="submit" className="action-btn primary">
+                    <Save size={16} /> 保存
+                  </button>
+                  <button type="button" className="action-btn" onClick={cancelEditPrompt}>
+                    取消
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <h2>{selectedPrompt.title}</h2>
+                <p>{selectedPrompt.content}</p>
+                <div className="tag-row">
+                  {selectedPrompt.tags.map((item) => (
+                    <span key={item} className="tag">
+                      #{item}
+                    </span>
+                  ))}
+                </div>
+                <div className="detail-footer">
+                  <span>最近更新：{new Date(selectedPrompt.updatedAt).toLocaleString('zh-CN')}</span>
+                </div>
+                <div className="toolbar" style={{ marginTop: 16 }}>
+                  <button type="button" className="action-btn" onClick={() => handleCopy(selectedPrompt)}>
+                    <Copy size={16} /> 复制内容
+                  </button>
+                  <button type="button" className="action-btn" onClick={() => beginEditPrompt(selectedPrompt)}>
+                    <Pencil size={16} /> 编辑
+                  </button>
+                  <button type="button" className="action-btn" onClick={() => handleOptimize(selectedPrompt)}>
+                    <PenSquare size={16} /> 优化内容
+                  </button>
+                  <button type="button" className="action-btn" onClick={() => handleDelete(selectedPrompt)}>
+                    <Trash2 size={16} /> 删除
+                  </button>
+                </div>
+              </>
+            )}
           </section>
         ) : (
           <section className="empty-state">没有找到符合条件的 Prompt。</section>
