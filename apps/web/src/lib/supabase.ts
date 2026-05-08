@@ -5,11 +5,17 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-const SUPABASE_EDGE_FUNCTION_URL = 'https://ohzaxwvqwvufjmymfunl.supabase.co/functions/v1/optimize-prompt'
+const SUPABASE_EDGE_FUNCTION_URL =
+  import.meta.env.VITE_SUPABASE_FUNCTION_URL ||
+  (supabaseUrl ? `${supabaseUrl.replace(/\/$/, '')}/functions/v1/optimize-prompt` : '')
 
 export async function optimizePromptWithAI(content: string): Promise<{ optimized: string | null; error: string | null }> {
   const { data: { session } } = await supabase.auth.getSession()
-  
+
+  if (!SUPABASE_EDGE_FUNCTION_URL) {
+    return { optimized: null, error: '未配置 Supabase 地址，无法调用 AI 优化' }
+  }
+
   if (!session) {
     return { optimized: null, error: '请先登录' }
   }

@@ -128,15 +128,28 @@ export default function PromptDetailPage() {
                 {isNew ? '新建 Prompt' : '编辑 Prompt'}
               </h1>
             </div>
-            {!isNew && (
+            <div className="flex items-center gap-2">
               <button
-                onClick={handleCopy}
-                className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${copied ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                type="button"
+                onClick={() => void handleAiOptimize()}
+                disabled={aiOptimizing || !content.trim()}
+                className="px-4 py-2 rounded-lg flex items-center gap-2 bg-purple-100 text-purple-800 hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="使用 Supabase Edge Function，无需在浏览器配置 API Key"
               >
-                <Copy className="w-4 h-4" />
-                {copied ? '已复制' : '复制'}
+                <Sparkles className="w-4 h-4" />
+                {aiOptimizing ? '优化中…' : 'AI 优化'}
               </button>
-            )}
+              {!isNew ? (
+                <button
+                  type="button"
+                  onClick={() => void handleCopy()}
+                  className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${copied ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                >
+                  <Copy className="w-4 h-4" />
+                  {copied ? '已复制' : '复制'}
+                </button>
+              ) : null}
+            </div>
           </div>
         </div>
       </nav>
@@ -227,7 +240,7 @@ export default function PromptDetailPage() {
                   className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                 >
                   <Sparkles className="w-4 h-4" />
-                  {aiOptimizing ? '优化中...' : 'AI 优化'}
+                  {aiOptimizing ? '优化中…' : 'AI 优化'}
                 </button>
               </div>
               <textarea

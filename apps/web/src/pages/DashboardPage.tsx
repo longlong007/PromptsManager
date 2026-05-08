@@ -91,9 +91,13 @@ export default function DashboardPage() {
               >
                 创建新 Prompt
               </button>
-              <div className="w-full py-3 px-4 border border-dashed border-gray-200 text-gray-400 rounded-lg font-medium text-center">
-                AI 配置已改为后端统一管理
-              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/prompts')}
+                className="w-full py-3 px-4 bg-purple-50 text-purple-900 border border-purple-200 rounded-lg font-medium hover:bg-purple-100 transition-colors text-center"
+              >
+                编辑 Prompt 时可使用「AI 优化」（云端）
+              </button>
             </div>
           </div>
         </div>
