@@ -66,8 +66,12 @@ function App() {
     setActionState('正在调用 AI 优化...')
     const result = await optimizePromptWithAI(prompt.content)
     if (result.optimized) {
-      await updatePrompt(prompt.id, { content: result.optimized })
-      setActionState('优化完成')
+      try {
+        await updatePrompt(prompt.id, { content: result.optimized })
+        setActionState('优化完成')
+      } catch (e) {
+        setActionState(e instanceof Error ? e.message : '保存失败')
+      }
     } else {
       setActionState(result.error || '优化失败')
     }
@@ -78,23 +82,35 @@ function App() {
     if (!title) return
     const content = window.prompt('请输入 Prompt 内容')?.trim()
     if (!content) return
-    const prompt = await addPrompt({ title, content, categoryId: categoryId || null, tags: tag ? [tag] : [] })
-    setSelectedPromptId(prompt.id)
-    setActionState('已创建 Prompt')
+    try {
+      const prompt = await addPrompt({ title, content, categoryId: categoryId || null, tags: tag ? [tag] : [] })
+      setSelectedPromptId(prompt.id)
+      setActionState('已创建 Prompt')
+    } catch (e) {
+      setActionState(e instanceof Error ? e.message : '创建失败')
+    }
   }
 
   async function handleQuickCategory() {
     const name = window.prompt('请输入分类名称')?.trim()
     if (!name) return
-    const category = await addCategory(name)
-    setCategoryId(category.id)
-    setActionState('已创建分类')
+    try {
+      const category = await addCategory(name)
+      setCategoryId(category.id)
+      setActionState('已创建分类')
+    } catch (e) {
+      setActionState(e instanceof Error ? e.message : '创建分类失败')
+    }
   }
 
   async function handleDelete(prompt?: Prompt) {
     if (!prompt) return
-    await deletePrompt(prompt.id)
-    setActionState('已删除 Prompt')
+    try {
+      await deletePrompt(prompt.id)
+      setActionState('已删除 Prompt')
+    } catch (e) {
+      setActionState(e instanceof Error ? e.message : '删除失败')
+    }
   }
 
   async function handleAccountAuth(e: React.FormEvent) {

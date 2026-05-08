@@ -222,9 +222,9 @@ export async function updateRemotePrompt(id: string, patch: Partial<Prompt>) {
 }
 
 export async function deleteRemotePrompt(id: string) {
-  if (!runtime.hasSupabaseConfig) return
+  if (!runtime.hasSupabaseConfig) throw new Error('服务未配置')
   const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return
+  if (!session) throw new Error('请先登录')
   const { error } = await supabase.from('prompts').delete().eq('id', id).eq('user_id', session.user.id)
   if (error) throw error
 }
@@ -274,9 +274,9 @@ export async function updateRemoteCategory(id: string, patch: Partial<Category>)
 }
 
 export async function deleteRemoteCategory(id: string) {
-  if (!runtime.hasSupabaseConfig) return
+  if (!runtime.hasSupabaseConfig) throw new Error('服务未配置')
   const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return
+  if (!session) throw new Error('请先登录')
   const { error } = await supabase.from('categories').delete().eq('id', id).eq('user_id', session.user.id)
   if (error) throw error
 }

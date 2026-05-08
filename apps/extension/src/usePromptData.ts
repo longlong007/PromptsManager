@@ -102,90 +102,53 @@ export function usePromptData() {
     await saveCategories(next)
   }
 
+  /**
+   * 强一致：必须有有效 session；远端写入成功后才更新本地缓存，失败则不修改列表。
+   */
   async function addPrompt(input: Omit<Prompt, 'id' | 'updatedAt'>) {
     const { data: { session: s } } = await supabase.auth.getSession()
-    let remote: Prompt | null = null
-    if (s) {
-      try {
-        remote = await createRemotePrompt(input)
-      } catch {
-        remote = null
-      }
-    }
-    const next: Prompt = remote ?? { ...input, id: crypto.randomUUID(), updatedAt: new Date().toISOString() }
-    await replacePrompts([next, ...prompts])
-    return next
+    if (!s) throw new Error('请先登录')
+    const remote = await createRemotePrompt(input)
+    await replacePrompts([remote, ...prompts])
+    return remote
   }
 
   async function updatePrompt(id: string, patch: Partial<Prompt>) {
     const { data: { session: s } } = await supabase.auth.getSession()
-    let remote: Prompt | null = null
-    if (s) {
-      try {
-        remote = await updateRemotePrompt(id, patch)
-      } catch {
-        remote = null
-      }
-    }
-    const next = prompts.map((prompt) =>
-      prompt.id === id ? remote ?? { ...prompt, ...patch, updatedAt: new Date().toISOString() } : prompt,
-    )
+    if (!s) throw new Error('请先登录')
+    const remote = await updateRemotePrompt(id, patch)
+    const next = prompts.map((prompt) => (prompt.id === id ? remote : prompt))
     await replacePrompts(next)
   }
 
   async function deletePrompt(id: string) {
     const { data: { session: s } } = await supabase.auth.getSession()
-    if (s) {
-      try {
-        await deleteRemotePrompt(id)
-      } catch {
-        /* 仍尝试本地删除 */
-      }
-    }
+    if (!s) throw new Error('请先登录')
+    await deleteRemotePrompt(id)
     const next = prompts.filter((prompt) => prompt.id !== id)
     await replacePrompts(next)
   }
 
   async function addCategory(name: string) {
     const { data: { session: s } } = await supabase.auth.getSession()
-    let remote: Category | null = null
-    if (s) {
-      try {
-        remote = await createRemoteCategory(name)
-      } catch {
-        remote = null
-      }
-    }
-    const next: Category = remote ?? { id: crypto.randomUUID(), name, parentId: null }
-    await replaceCategories([...categories, next])
-    return next
+    if (!s) throw new Error('请先登录')
+    const remote = await createRemoteCategory(name)
+    await replaceCategories([...categories, remote])
+    return remote
   }
 
   async function updateCategory(id: string, patch: Partial<Category>) {
     const { data: { session: s } } = await supabase.auth.getSession()
-    let remote: Category | null = null
-    if (s) {
-      try {
-        remote = await updateRemoteCategory(id, patch)
-      } catch {
-        remote = null
-      }
-    }
-    const next = categories.map((category) =>
-      category.id === id ? remote ?? { ...category, ...patch } : category,
-    )
+    if (!s) throw new Error('请先登录')
+    const remote = await updateRemoteCategory(id, patch)
+    const next = categories.map((category) => (category.id === id ? remote : category))
     await replaceCategories(next)
   }
 
   async function deleteCategory(id: string) {
     const { data: { session: s } } = await supabase.auth.getSession()
-    if (s) {
-      try {
-        await deleteRemoteCategory(id)
-      } catch {
-        /* 仍尝试本地删除 */
-      }
-    }
+    if (!s) throw new Error('请先登录')
+    await deleteRemoteCategory(id)
     const next = categories.filter((category) => category.id !== id)
     await replaceCategories(next)
   }
