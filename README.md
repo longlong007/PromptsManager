@@ -21,8 +21,9 @@
 - [x] 全文搜索 + 分类筛选
 - [x] 一键复制
 - [x] AI 优化 Prompt
-- [ ] Tauri 桌面端
-- [ ] Capacitor 移动端
+- [x] Tauri 桌面端
+- [x] Capacitor 移动端
+- [ ] Android APK 打包验证
 - [ ] 微信小程序
 
 ## 快速开始
@@ -57,8 +58,8 @@ pnpm build:web
 prompt-manager/
 ├── apps/
 │   ├── web/                 # Web应用
-│   ├── desktop/            # Tauri桌面端 (待实现)
-│   ├── mobile/             # Capacitor移动端 (待实现)
+│   ├── desktop/            # Tauri桌面端
+│   ├── mobile/             # Capacitor移动端
 │   └── miniprogram/         # 微信小程序 (待实现)
 ├── packages/
 │   └── shared/              # 共享类型定义
@@ -76,11 +77,24 @@ VITE_SUPABASE_URL=your_supabase-project-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
-## 后续开发
+### 5. 桌面端开发 (Tauri)
 
-1. **Tauri桌面端** - 使用 Tauri 封装 Web 应用为桌面应用
-2. **Capacitor移动端** - 使用 Capacitor 封装为 iOS/Android 应用
-3. **微信小程序** - 使用微信原生开发小程序版本
+需先安装 [Rust](https://rustup.rs/) 和 [Tauri 前置依赖](https://v2.tauri.app/start/prerequisites/)。
+
+```bash
+pnpm dev:desktop
+```
+
+### 6. 移动端开发 (Capacitor)
+
+需安装 [Android Studio](https://developer.android.com/studio)。
+
+```bash
+pnpm build:mobile
+pnpm --filter mobile open:android
+```
+
+### 7. 浏览器插件
 
 ## License
 

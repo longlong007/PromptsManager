@@ -2,3 +2,17 @@ node_modules
 .env
 apps/extension/dist
 apps/extension/node_modules
+
+# Tauri
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/
+
+# Capacitor
+apps/mobile/android/.gradle/
+apps/mobile/android/app/build/
+apps/mobile/android/build/
+apps/mobile/android/.idea/
+apps/mobile/android/local.properties
+
+# Temp scaffold
+temp-tauri-scaffold/

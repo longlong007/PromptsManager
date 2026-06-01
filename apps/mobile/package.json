@@ -1,0 +1,19 @@
+{
+  "name": "mobile",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build:native && cap sync",
+    "sync": "cap sync",
+    "open:android": "cap open android",
+    "run:android": "cap run android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/core": "^7.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.2.0"
+  }
+}

@@ -34,10 +34,10 @@ todos:
     status: completed
   - id: setup-desktop
     content: 搭建Tauri桌面端
-    status: pending
+    status: completed
   - id: setup-mobile
     content: 搭建Capacitor移动端
-    status: pending
+    status: completed
   - id: build-apk
     content: 打包Android应用
     status: pending
