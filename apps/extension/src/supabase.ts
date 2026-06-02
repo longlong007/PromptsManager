@@ -17,7 +17,17 @@ function supabaseProjectRefFromUrl(url: string): string {
 }
 
 const projectRef = supabaseProjectRefFromUrl(runtime.supabaseUrl)
-const authStorageKey = `sb-${projectRef}-auth-token`
+export const authStorageKey = `sb-${projectRef}-auth-token`
+
+/** 是否曾在 chrome.storage 持久化过登录态（不读取 token 内容） */
+export async function hasPersistedAuth(): Promise<boolean> {
+  if (!hasChromeStorage()) return false
+  const result = await chrome.storage.local.get(authStorageKey)
+  const value = result[authStorageKey]
+  if (typeof value === 'string') return value.length > 2
+  if (value != null) return true
+  return false
+}
 
 function createChromeLocalStorage(): SupportedStorage {
   return {
@@ -25,7 +35,9 @@ function createChromeLocalStorage(): SupportedStorage {
       if (!hasChromeStorage()) return null
       const result = await chrome.storage.local.get(key)
       const value = result[key]
-      return typeof value === 'string' ? value : null
+      if (typeof value === 'string') return value
+      if (value != null) return JSON.stringify(value)
+      return null
     },
     setItem: async (key: string, value: string) => {
       if (!hasChromeStorage()) return

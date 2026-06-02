@@ -8,12 +8,31 @@ import {
   deleteRemotePrompt,
   fetchRemoteCategories,
   fetchRemotePrompts,
+  hasPersistedAuth,
   signInWithGoogleExtension,
   supabase,
   updateRemoteCategory,
   updateRemotePrompt,
 } from './supabase'
 import type { Category, Prompt } from './types'
+
+const GET_SESSION_TIMEOUT_MS = 8000
+const BOOT_READY_MAX_MS = 12000
+
+type SessionProbe = { session: Session | null; timedOut: boolean }
+
+async function getSessionWithTimeout(): Promise<SessionProbe> {
+  const result = await Promise.race([
+    supabase.auth.getSession().then((r) => ({ kind: 'ok' as const, session: r.data.session })),
+    new Promise<{ kind: 'timeout' }>((resolve) => {
+      setTimeout(() => resolve({ kind: 'timeout' }), GET_SESSION_TIMEOUT_MS)
+    }),
+  ])
+  if (result.kind === 'timeout') {
+    return { session: null, timedOut: true }
+  }
+  return { session: result.session, timedOut: false }
+}
 
 export function usePromptData() {
   const [prompts, setPrompts] = useState<Prompt[]>([])
@@ -25,6 +44,14 @@ export function usePromptData() {
 
   useEffect(() => {
     let active = true
+    let bootstrapDone = false
+
+    function endBootstrap() {
+      if (!active || bootstrapDone) return
+      bootstrapDone = true
+      setAuthLoading(false)
+      setReady(true)
+    }
 
     async function hydrateFromRemote(userId: string) {
       const [remotePrompts, remoteCategories] = await Promise.all([
@@ -45,35 +72,28 @@ export function usePromptData() {
       await saveCategories([])
     }
 
-    async function boot() {
-      const { data: { session: initialSession } } = await supabase.auth.getSession()
-      if (!active) return
-      setSession(initialSession)
-      setUser(initialSession?.user ?? null)
-      if (initialSession?.user) {
-        try {
-          await hydrateFromRemote(initialSession.user.id)
-        } catch {
-          const [storedPrompts, storedCategories] = await Promise.all([loadPrompts(), loadCategories()])
-          if (active) {
-            setPrompts(storedPrompts)
-            setCategories(storedCategories)
-          }
+    async function hydrateAfterReady(userId: string) {
+      try {
+        await hydrateFromRemote(userId)
+      } catch {
+        const [storedPrompts, storedCategories] = await Promise.all([loadPrompts(), loadCategories()])
+        if (active) {
+          setPrompts(storedPrompts)
+          setCategories(storedCategories)
         }
       }
-      setAuthLoading(false)
-      setReady(true)
     }
-
-    void boot()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
       if (!active) return
       setSession(nextSession)
       setUser(nextSession?.user ?? null)
+      endBootstrap()
 
       if (!nextSession?.user) {
-        await clearLocalCaches()
+        if (event === 'SIGNED_OUT') {
+          await clearLocalCaches()
+        }
         return
       }
 
@@ -86,8 +106,44 @@ export function usePromptData() {
       }
     })
 
+    async function boot() {
+      const persisted = await hasPersistedAuth()
+      let hydrateUserId: string | null = null
+      try {
+        const { session: probed, timedOut } = await getSessionWithTimeout()
+        if (!active) return
+        if (!timedOut) {
+          setSession(probed)
+          setUser(probed?.user ?? null)
+          if (probed?.user) {
+            hydrateUserId = probed.user.id
+          }
+        } else if (!persisted) {
+          setSession(null)
+          setUser(null)
+        }
+        /* timedOut 且 persisted：不把 session 置空，等待 onAuthStateChange 恢复 */
+      } catch {
+        /* finally 仍会结束加载态 */
+      } finally {
+        if (!persisted) {
+          endBootstrap()
+        }
+      }
+      if (active && hydrateUserId) {
+        void hydrateAfterReady(hydrateUserId)
+      }
+    }
+
+    void boot()
+
+    const safetyTimer = window.setTimeout(() => {
+      endBootstrap()
+    }, BOOT_READY_MAX_MS)
+
     return () => {
       active = false
+      window.clearTimeout(safetyTimer)
       subscription.unsubscribe()
     }
   }, [])
