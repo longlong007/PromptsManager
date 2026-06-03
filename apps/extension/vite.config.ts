@@ -29,6 +29,8 @@ export default defineConfig({
         content: resolve(__dirname, 'src/content/contentScript.ts'),
       },
       output: {
+        // 避免 content.js 被拆出带 import 的共享 chunk（动态注入只能加载单文件）
+        onlyExplicitManualChunks: true,
         entryFileNames: (chunkInfo) => {
           if (chunkInfo.name === 'background') return 'background.js'
           if (chunkInfo.name === 'content') return 'content.js'

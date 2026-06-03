@@ -1,7 +1,12 @@
 /**
  * Content script：在网页输入框插入 Prompt、显示轻提示。
  * 消息常量需与 messaging.ts 保持一致（此处独立打包，避免 chunk 依赖）。
+ * 日志须内联：本脚本由 executeScript 注入，不能使用 import / 外部 chunk。
  */
+function apmLog(...args: unknown[]) {
+  console.log('[APM][content]', ...args)
+}
+
 const MSG = {
   PING: 'APM_PING',
   INSERT_PROMPT: 'APM_INSERT_PROMPT',
@@ -101,14 +106,17 @@ function findChatInput(): HTMLElement | null {
 function insertPromptText(text: string): boolean {
   const active = document.activeElement
   if (active instanceof HTMLElement && insertIntoElement(active, text)) {
+    apmLog('content', '插入到当前焦点元素', active.tagName)
     return true
   }
 
   const chatInput = findChatInput()
   if (chatInput) {
+    apmLog('content', '插入到匹配输入框', chatInput.tagName)
     return insertIntoElement(chatInput, text)
   }
 
+  apmLog('content', '未找到可编辑输入框', location.href)
   return false
 }
 
@@ -140,13 +148,18 @@ function showToast(message: string) {
   window.setTimeout(() => toast.remove(), 2800)
 }
 
+apmLog('content', 'content script 已注入', location.href)
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  apmLog('content', '收到消息', message?.type)
+
   if (message?.type === MSG.PING) {
     sendResponse({ ok: true })
     return true
   }
 
   if (message?.type === MSG.SHOW_TOAST && typeof message.message === 'string') {
+    apmLog('content', '显示 Toast', message.message)
     showToast(message.message)
     sendResponse({ ok: true })
     return true
@@ -154,6 +167,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   if (message?.type === MSG.INSERT_PROMPT && typeof message.content === 'string') {
     const ok = insertPromptText(message.content)
+    apmLog('content', 'INSERT_PROMPT 结果', { ok, length: message.content.length })
     if (ok) showToast('Prompt 已插入')
     sendResponse({ ok, error: ok ? undefined : '未找到可编辑输入框' })
     return true

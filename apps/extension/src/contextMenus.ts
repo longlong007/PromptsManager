@@ -1,3 +1,4 @@
+import { apmLog } from './debugLog'
 import { loadPrompts, STORAGE_KEYS } from './storage'
 
 export const MENU_SAVE_SELECTION = 'apm-save-selection'
@@ -7,6 +8,8 @@ export const MENU_INSERT_PREFIX = 'apm-insert-'
 const MAX_INSERT_MENU_ITEMS = 15
 
 export async function rebuildContextMenus(): Promise<void> {
+  const prompts = await loadPrompts()
+  apmLog('bg', '重建右键菜单', { promptCount: prompts.length })
   await chrome.contextMenus.removeAll()
 
   chrome.contextMenus.create({
@@ -15,7 +18,6 @@ export async function rebuildContextMenus(): Promise<void> {
     contexts: ['selection'],
   })
 
-  const prompts = await loadPrompts()
   if (prompts.length === 0) return
 
   chrome.contextMenus.create({

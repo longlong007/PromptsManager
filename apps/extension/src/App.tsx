@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Copy, Sparkles, FolderOpen, Search, Plus, Settings2, RefreshCw, Trash2, PenSquare, LogIn, RotateCw, Pencil, Save, Send } from 'lucide-react'
 import { usePromptData } from './usePromptData'
 import { getSessionToken, optimizePromptWithAI } from './supabase'
+import { apmLog } from './debugLog'
 import { insertPromptToActiveTab } from './insertPrompt'
 import type { Prompt } from './types'
 
@@ -17,6 +18,10 @@ function GoogleIcon() {
 }
 
 function App() {
+  useEffect(() => {
+    apmLog('ui', '侧栏 UI 已挂载')
+  }, [])
+
   const {
     prompts,
     categories,

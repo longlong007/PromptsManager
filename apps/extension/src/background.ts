@@ -8,6 +8,7 @@ import { MSG, type InsertPromptTabRequest, type InsertPromptTabResponse } from '
 import { saveSelectionAsPrompt } from './promptClipService'
 import { syncPromptsFromRemote } from './syncService'
 import { insertPromptIntoTab, showTabToast } from './tabInsert'
+import { apmLog, apmWarn } from './debugLog'
 import { loadPrompts } from './storage'
 
 const SYNC_ALARM_NAME = 'sync-prompts'
@@ -25,24 +26,30 @@ async function setupSyncAlarm() {
 }
 
 async function runBackgroundSync() {
+  apmLog('bg', '开始后台同步')
   const result = await syncPromptsFromRemote()
   if (result.ok) {
-    console.info(
-      `[AI Prompt Manager] 后台同步完成：${result.promptCount} 条 Prompt，${result.categoryCount} 个分类`,
+    apmLog(
+      'bg',
+      `同步完成：${result.promptCount} 条 Prompt，${result.categoryCount} 个分类`,
     )
     return
   }
   if (result.reason !== 'not_logged_in') {
-    console.warn('[AI Prompt Manager] 后台同步失败:', result.message ?? result.reason)
+    apmWarn('bg', '同步失败:', result.message ?? result.reason)
+  } else {
+    apmLog('bg', '同步跳过：未登录')
   }
 }
 
+apmLog('bg', 'Service Worker 已加载')
 setupSidePanel()
 void setupSyncAlarm()
 watchPromptsForContextMenus()
 void rebuildContextMenus()
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener((details) => {
+  apmLog('bg', 'onInstalled', details.reason)
   setupSidePanel()
   void setupSyncAlarm().then(() => runBackgroundSync())
   void rebuildContextMenus()
@@ -50,11 +57,13 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.alarms.onAlarm.addListener((alarm: chrome.alarms.Alarm) => {
   if (alarm.name === SYNC_ALARM_NAME) {
+    apmLog('bg', '定时闹钟触发同步', alarm.name)
     void runBackgroundSync()
   }
 })
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
+  apmLog('bg', '右键菜单点击', { menuItemId: info.menuItemId, tabId: tab?.id })
   void (async () => {
     if (info.menuItemId === MENU_SAVE_SELECTION && info.selectionText) {
       const result = await saveSelectionAsPrompt(info.selectionText)
@@ -80,14 +89,16 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
 
     const insertResult = await insertPromptIntoTab(tab.id, prompt.content)
+    apmLog('bg', '右键插入结果', { promptId, ok: insertResult.ok, error: insertResult.error })
     if (!insertResult.ok) {
       await showTabToast(tab.id, insertResult.error ?? '插入失败')
     }
   })()
 })
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === MSG.INSERT_PROMPT_TAB) {
+    apmLog('bg', '收到 INSERT_PROMPT_TAB', { from: sender.id, tabId: (message as InsertPromptTabRequest).tabId })
     void (async () => {
       const req = message as InsertPromptTabRequest
       let tabId = req.tabId
@@ -100,9 +111,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         return
       }
       const result = await insertPromptIntoTab(tabId, req.content)
+      apmLog('bg', 'INSERT_PROMPT_TAB 完成', { tabId, ok: result.ok, error: result.error })
       sendResponse(result satisfies InsertPromptTabResponse)
     })()
     return true
   }
+  apmLog('bg', '忽略未知消息', message?.type)
   return false
 })

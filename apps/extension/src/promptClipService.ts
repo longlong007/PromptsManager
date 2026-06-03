@@ -1,3 +1,4 @@
+import { apmLog } from './debugLog'
 import { loadPrompts, savePrompts } from './storage'
 import { createRemotePrompt, supabase } from './supabase'
 
@@ -12,6 +13,7 @@ export async function saveSelectionAsPrompt(
   selectionText: string,
 ): Promise<{ ok: true; title: string } | { ok: false; error: string }> {
   const content = selectionText.trim()
+  apmLog('bg', '保存划词为 Prompt', { chars: content.length })
   if (!content) return { ok: false, error: '选区为空' }
 
   const {
