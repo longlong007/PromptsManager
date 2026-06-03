@@ -1,6 +1,7 @@
 import type { Session, User } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
-import { loadCategories, loadPrompts, saveCategories, savePrompts } from './storage'
+import { loadCategories, loadPrompts, saveCategories, savePrompts, STORAGE_KEYS } from './storage'
+import { syncPromptsFromRemote } from './syncService'
 import {
   createRemoteCategory,
   createRemotePrompt,
@@ -148,6 +149,29 @@ export function usePromptData() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!ready || !session) return
+
+    async function reloadFromStorage() {
+      const [storedPrompts, storedCategories] = await Promise.all([loadPrompts(), loadCategories()])
+      setPrompts(storedPrompts)
+      setCategories(storedCategories)
+    }
+
+    function onStorageChanged(
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: string,
+    ) {
+      if (areaName !== 'local') return
+      if (STORAGE_KEYS.prompts in changes || STORAGE_KEYS.categories in changes) {
+        void reloadFromStorage()
+      }
+    }
+
+    chrome.storage.onChanged.addListener(onStorageChanged)
+    return () => chrome.storage.onChanged.removeListener(onStorageChanged)
+  }, [ready, session])
+
   async function replacePrompts(next: Prompt[]) {
     setPrompts(next)
     await savePrompts(next)
@@ -228,14 +252,14 @@ export function usePromptData() {
   }
 
   async function syncFromRemote() {
-    const { data: { session: s } } = await supabase.auth.getSession()
-    if (!s?.user) throw new Error('请先登录')
-    const [remotePrompts, remoteCategories] = await Promise.all([
-      fetchRemotePrompts(s.user.id),
-      fetchRemoteCategories(s.user.id),
-    ])
-    await replacePrompts(remotePrompts)
-    await replaceCategories(remoteCategories)
+    const result = await syncPromptsFromRemote()
+    if (!result.ok) {
+      if (result.reason === 'not_logged_in') throw new Error('请先登录')
+      throw new Error(result.message ?? '同步失败')
+    }
+    const [storedPrompts, storedCategories] = await Promise.all([loadPrompts(), loadCategories()])
+    setPrompts(storedPrompts)
+    setCategories(storedCategories)
   }
 
   return {

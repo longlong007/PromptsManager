@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Copy, Sparkles, FolderOpen, Search, Plus, Settings2, RefreshCw, Trash2, PenSquare, LogIn, RotateCw, Pencil, Save } from 'lucide-react'
+import { Copy, Sparkles, FolderOpen, Search, Plus, Settings2, RefreshCw, Trash2, PenSquare, LogIn, RotateCw, Pencil, Save, Send } from 'lucide-react'
 import { usePromptData } from './usePromptData'
 import { getSessionToken, optimizePromptWithAI } from './supabase'
+import { insertPromptToActiveTab } from './insertPrompt'
 import type { Prompt } from './types'
 
 function GoogleIcon() {
@@ -137,6 +138,13 @@ function App() {
     if (!prompt) return
     await navigator.clipboard.writeText(prompt.content)
     setActionState('已复制到剪贴板')
+  }
+
+  async function handleInsertToPage(prompt?: Prompt) {
+    if (!prompt) return
+    setActionState('正在插入到页面…')
+    const result = await insertPromptToActiveTab(prompt.content)
+    setActionState(result.ok ? '已插入到当前页面' : (result.error ?? '插入失败'))
   }
 
   async function handleOptimize(prompt?: Prompt) {
@@ -367,6 +375,7 @@ function App() {
           </div>
           <div className="header-actions">
             <button type="button" className="action-btn" onClick={() => handleCopy(selectedPrompt ?? undefined)} disabled={isEditingPrompt}><Copy size={16} /> 复制</button>
+            <button type="button" className="action-btn" onClick={() => handleInsertToPage(selectedPrompt ?? undefined)} disabled={!selectedPrompt || isEditingPrompt}><Send size={16} /> 插入页面</button>
             <button type="button" className="action-btn" onClick={() => selectedPrompt && beginEditPrompt(selectedPrompt)} disabled={!selectedPrompt || isEditingPrompt}>
               <Pencil size={16} /> 编辑
             </button>
@@ -455,6 +464,9 @@ function App() {
                 <div className="toolbar" style={{ marginTop: 16 }}>
                   <button type="button" className="action-btn" onClick={() => handleCopy(selectedPrompt)}>
                     <Copy size={16} /> 复制内容
+                  </button>
+                  <button type="button" className="action-btn" onClick={() => handleInsertToPage(selectedPrompt)}>
+                    <Send size={16} /> 插入页面
                   </button>
                   <button type="button" className="action-btn" onClick={() => beginEditPrompt(selectedPrompt)}>
                     <Pencil size={16} /> 编辑

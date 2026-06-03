@@ -1,7 +1,12 @@
 import type { Category, Prompt } from './types'
 
-const PROMPTS_KEY = 'ai_prompt_manager_prompts'
-const CATEGORIES_KEY = 'ai_prompt_manager_categories'
+export const STORAGE_KEYS = {
+  prompts: 'ai_prompt_manager_prompts',
+  categories: 'ai_prompt_manager_categories',
+} as const
+
+const PROMPTS_KEY = STORAGE_KEYS.prompts
+const CATEGORIES_KEY = STORAGE_KEYS.categories
 
 function hasChromeStorage() {
   return typeof chrome !== 'undefined' && Boolean(chrome.storage?.local)
