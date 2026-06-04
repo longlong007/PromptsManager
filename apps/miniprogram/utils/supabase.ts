@@ -320,6 +320,7 @@ export async function optimizePromptWithAI(
       header: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`,
+        apikey: SUPABASE_ANON_KEY,
       },
       data: { content },
       success(res) {

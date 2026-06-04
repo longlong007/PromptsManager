@@ -70,20 +70,49 @@ page {
   border: none;
 }
 
+/* 统一单行表单控件高度（约 48px 触控区域，便于点击与阅读） */
 .input,
-.textarea,
-.picker-wrap {
+.picker-wrap,
+.picker-btn {
   width: 100%;
   box-sizing: border-box;
   border: 2rpx solid #d1d5db;
   border-radius: 16rpx;
-  padding: 20rpx 24rpx;
-  font-size: 28rpx;
   background: #fff;
+  font-size: 30rpx;
+  color: #111827;
+}
+
+.input {
+  height: 96rpx;
+  min-height: 96rpx;
+  padding: 0 28rpx;
+  line-height: 96rpx;
+}
+
+.picker-wrap,
+.picker-btn {
+  min-height: 96rpx;
+  height: 96rpx;
+  padding: 0 28rpx;
+  display: flex;
+  align-items: center;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .textarea {
-  min-height: 320rpx;
+  width: 100%;
+  box-sizing: border-box;
+  border: 2rpx solid #d1d5db;
+  border-radius: 16rpx;
+  padding: 24rpx 28rpx;
+  font-size: 30rpx;
+  line-height: 1.5;
+  background: #fff;
+  min-height: 360rpx;
   font-family: monospace;
 }
 
@@ -97,6 +126,28 @@ page {
 
 .form-group {
   margin-bottom: 28rpx;
+}
+
+/* 输入框与并排按钮等高 */
+.form-inline {
+  display: flex;
+  align-items: stretch;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.btn-field {
+  height: 96rpx !important;
+  min-height: 96rpx !important;
+  line-height: 96rpx !important;
+  padding: 0 28rpx !important;
+  font-size: 28rpx !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .tag {

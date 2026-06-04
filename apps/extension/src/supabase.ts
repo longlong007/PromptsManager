@@ -123,6 +123,7 @@ export async function optimizePromptWithAI(content: string): Promise<{ optimized
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`,
+        apikey: runtime.supabaseAnonKey,
       },
       body: JSON.stringify({ content }),
     })

@@ -77,6 +77,20 @@ VITE_SUPABASE_URL=your_supabase-project-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
+### AI 优化（Edge Function）
+
+各端「AI 优化」按钮调用 Supabase Edge Function `optimize-prompt`（服务端使用 DeepSeek，API Key 不暴露给前端）。
+
+```bash
+# 设置 DeepSeek API Key（Supabase Dashboard → Edge Functions → Secrets 亦可）
+npx supabase secrets set DEEPSEEK_API_KEY=sk-your-key
+
+# 部署函数
+npx supabase functions deploy optimize-prompt
+```
+
+详见 [supabase/functions/optimize-prompt/README.md](supabase/functions/optimize-prompt/README.md)。
+
 ### 5. 桌面端开发 (Tauri)
 
 需先安装 [Rust](https://rustup.rs/) 和 [Tauri 前置依赖](https://v2.tauri.app/start/prerequisites/)。

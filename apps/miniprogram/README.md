@@ -69,5 +69,5 @@ apps/miniprogram/
 ## 说明
 
 - 微信小程序不支持 Google OAuth，仅提供邮箱密码登录。
-- AI 优化依赖已部署的 Supabase Edge Function；若函数返回 410，需在后端重新启用优化逻辑。
+- AI 优化需在 Supabase 部署 `optimize-prompt` 并配置 `DEEPSEEK_API_KEY`，见 `supabase/functions/optimize-prompt/README.md`。
 - `touristappid` 仅用于本地调试，正式发布请使用真实 AppID。

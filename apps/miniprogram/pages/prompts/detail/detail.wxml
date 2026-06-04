@@ -33,14 +33,14 @@
         <text class="label">分类</text>
         <text class="link" bindtap="onToggleNewCategory">+ 新建分类</text>
       </view>
-      <view wx:if="{{showNewCategory}}" class="flex-row" style="margin-bottom:16rpx">
+      <view wx:if="{{showNewCategory}}" class="form-inline">
         <input
           class="input flex-1"
           placeholder="新分类名称"
           value="{{newCategoryName}}"
           bindinput="onNewCategoryInput"
         />
-        <button class="btn-primary" size="mini" bindtap="onCreateCategory">添加</button>
+        <button class="btn-primary btn-field" bindtap="onCreateCategory">添加</button>
       </view>
       <picker
         mode="selector"

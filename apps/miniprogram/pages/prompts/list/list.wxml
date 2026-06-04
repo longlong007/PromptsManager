@@ -14,7 +14,7 @@
       value="{{categoryIndex}}"
       bindchange="onCategoryChange"
     >
-      <view class="picker-btn">{{categoryNames[categoryIndex]}}</view>
+      <view class="picker-btn picker-wrap">{{categoryNames[categoryIndex]}}</view>
     </picker>
     <button class="btn-primary search-btn" size="mini" bindtap="onSearch">搜索</button>
   </view>
@@ -52,36 +52,53 @@
     </button>
   </view>
 
-  <view wx:else>
+  <view wx:else class="prompt-list">
     <view
       wx:for="{{displayPrompts}}"
       wx:key="id"
-      class="card prompt-card"
+      class="prompt-card"
     >
-      <view class="flex-row">
+      <view class="prompt-card-inner flex-row">
         <checkbox
           wx:if="{{batchMode}}"
+          class="prompt-checkbox"
           checked="{{item.selected}}"
           data-id="{{item.id}}"
           bindtap="onToggleSelect"
         />
-        <view class="flex-1" data-id="{{item.id}}" bindtap="onCardTap">
-          <text class="prompt-title">{{item.title}}</text>
-          <text class="prompt-content line-clamp-2">{{item.content}}</text>
-          <view class="tag-row">
-            <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="tag">{{tag}}</text>
+        <view class="prompt-body flex-1" data-id="{{item.id}}" bindtap="onCardTap">
+          <view class="prompt-title ellipsis-1">{{item.title}}</view>
+          <view class="prompt-content ellipsis-2">{{item.content}}</view>
+          <view wx:if="{{item.tags.length > 0}}" class="tag-row ellipsis-1">
+            <text
+              wx:for="{{item.tags}}"
+              wx:for-item="tag"
+              wx:key="*this"
+              wx:if="{{index < 3}}"
+              class="tag"
+            >{{tag}}</text>
+            <text wx:if="{{item.tags.length > 3}}" class="tag tag-more">+{{item.tags.length - 3}}</text>
           </view>
-          <view class="meta text-muted">
+          <view class="meta ellipsis-1">
             <text>{{item.categoryLabel}}</text>
+            <text class="meta-dot">·</text>
             <text>使用 {{item.usage_count}} 次</text>
+            <text class="meta-dot">·</text>
             <text>{{item.dateLabel}}</text>
           </view>
         </view>
-        <view wx:if="{{!batchMode}}" class="actions">
-          <text class="action-icon" data-id="{{item.id}}" data-content="{{item.content}}" data-title="{{item.title}}" data-usage="{{item.usage_count}}" bindtap="onCopy">复制</text>
-          <text class="action-icon" data-id="{{item.id}}" bindtap="goEdit">编辑</text>
-          <text class="action-icon danger" data-id="{{item.id}}" bindtap="onDelete">删除</text>
-        </view>
+      </view>
+      <view wx:if="{{!batchMode}}" class="prompt-actions">
+        <text
+          class="action-btn"
+          data-id="{{item.id}}"
+          data-content="{{item.content}}"
+          data-title="{{item.title}}"
+          data-usage="{{item.usage_count}}"
+          catchtap="onCopy"
+        >复制</text>
+        <text class="action-btn" data-id="{{item.id}}" catchtap="goEdit">编辑</text>
+        <text class="action-btn danger" data-id="{{item.id}}" catchtap="onDelete">删除</text>
       </view>
     </view>
   </view>

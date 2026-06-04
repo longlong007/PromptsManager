@@ -25,7 +25,8 @@ export async function optimizePromptWithAI(content: string): Promise<{ optimized
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`
+        'Authorization': `Bearer ${session.access_token}`,
+        apikey: supabaseAnonKey,
       },
       body: JSON.stringify({ content })
     })
