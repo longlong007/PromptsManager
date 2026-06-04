@@ -1,0 +1,61 @@
+<view class="container">
+  <view class="user-bar flex-between">
+    <text class="text-muted">{{userEmail}}</text>
+    <text class="logout-link" bindtap="onLogout">退出</text>
+  </view>
+
+  <view class="section-title">AI 提示词模板</view>
+
+  <view class="stats-grid">
+    <view class="stat-item">
+      <text class="stat-label">Prompt 总数</text>
+      <text class="stat-value">{{promptCount}}</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-label">分类总数</text>
+      <text class="stat-value">{{categoryCount}}</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-label">总使用次数</text>
+      <text class="stat-value">{{totalUsage}}</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="flex-between">
+      <text class="card-title">最近添加</text>
+      <text class="link" bindtap="goPrompts">查看全部</text>
+    </view>
+    <view wx:if="{{recentPrompts.length === 0}}" class="empty-inner">
+      <text class="text-muted">还没有 Prompt，点击下方按钮创建</text>
+    </view>
+    <view
+      wx:for="{{recentPrompts}}"
+      wx:key="id"
+      class="recent-item"
+      data-id="{{item.id}}"
+      bindtap="goDetail"
+    >
+      <text class="recent-title">{{item.title}}</text>
+      <text class="recent-content line-clamp-2">{{item.content}}</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <text class="card-title">快速操作</text>
+    <button class="btn-primary action-btn" bindtap="goNewPrompt">创建新 Prompt</button>
+    <button class="btn-secondary action-btn" bindtap="goPrompts">管理 Prompt 列表</button>
+    <button class="btn-secondary action-btn" bindtap="goCategories">管理分类</button>
+  </view>
+
+  <view class="card" wx:if="{{copyHistory.length > 0}}">
+    <view class="flex-between">
+      <text class="card-title">复制历史</text>
+      <text class="link" bindtap="onClearHistory">清空</text>
+    </view>
+    <view wx:for="{{copyHistory}}" wx:key="promptId" class="history-item">
+      <text>{{item.title}}</text>
+      <text class="text-muted">{{item.copiedAtDisplay}}</text>
+    </view>
+  </view>
+</view>

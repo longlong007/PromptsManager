@@ -1,0 +1,46 @@
+<view class="login-page">
+  <view class="login-card">
+    <view class="login-header">
+      <text class="login-title">Prompt Manager</text>
+      <text class="login-subtitle">AI 提示词管理器</text>
+    </view>
+
+    <view class="form-group">
+      <text class="label">邮箱</text>
+      <input
+        class="input"
+        type="text"
+        placeholder="your@email.com"
+        value="{{email}}"
+        bindinput="onEmailInput"
+      />
+    </view>
+
+    <view class="form-group">
+      <text class="label">密码</text>
+      <input
+        class="input"
+        type="password"
+        placeholder="至少 6 位"
+        value="{{password}}"
+        bindinput="onPasswordInput"
+      />
+    </view>
+
+    <view wx:if="{{error}}" class="error-box">{{error}}</view>
+
+    <button
+      class="btn-primary login-btn"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+      bindtap="onSubmit"
+    >
+      {{isLogin ? '登录' : '注册'}}
+    </button>
+
+    <view class="toggle-mode">
+      <text class="text-muted">{{isLogin ? '还没有账号？' : '已有账号？'}}</text>
+      <text class="link" bindtap="onToggleMode">{{isLogin ? '立即注册' : '去登录'}}</text>
+    </view>
+  </view>
+</view>

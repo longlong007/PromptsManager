@@ -1,0 +1,99 @@
+<view class="container">
+  <view class="top-actions flex-row">
+    <button
+      class="btn-purple flex-1"
+      loading="{{aiOptimizing}}"
+      disabled="{{aiOptimizing || !content}}"
+      bindtap="onAiOptimize"
+    >
+      AI 优化
+    </button>
+    <button
+      wx:if="{{!isNew}}"
+      class="btn-secondary flex-1"
+      bindtap="onCopy"
+    >
+      {{copied ? '已复制' : '复制'}}
+    </button>
+  </view>
+
+  <view class="card">
+    <view class="form-group">
+      <text class="label">标题</text>
+      <input
+        class="input"
+        placeholder="给 Prompt 起个名字"
+        value="{{title}}"
+        bindinput="onTitleInput"
+      />
+    </view>
+
+    <view class="form-group">
+      <view class="flex-between">
+        <text class="label">分类</text>
+        <text class="link" bindtap="onToggleNewCategory">+ 新建分类</text>
+      </view>
+      <view wx:if="{{showNewCategory}}" class="flex-row" style="margin-bottom:16rpx">
+        <input
+          class="input flex-1"
+          placeholder="新分类名称"
+          value="{{newCategoryName}}"
+          bindinput="onNewCategoryInput"
+        />
+        <button class="btn-primary" size="mini" bindtap="onCreateCategory">添加</button>
+      </view>
+      <picker
+        mode="selector"
+        range="{{categoryNames}}"
+        value="{{categoryIndex}}"
+        bindchange="onCategoryChange"
+      >
+        <view class="picker-wrap">{{categoryNames[categoryIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="form-group">
+      <text class="label">标签（逗号分隔）</text>
+      <input
+        class="input"
+        placeholder="写作, 翻译, 代码..."
+        value="{{tags}}"
+        bindinput="onTagsInput"
+      />
+    </view>
+
+    <view class="form-group">
+      <view class="flex-between">
+        <text class="label">Prompt 内容</text>
+        <button
+          class="btn-purple"
+          size="mini"
+          loading="{{aiOptimizing}}"
+          disabled="{{aiOptimizing || !content}}"
+          bindtap="onAiOptimize"
+        >
+          AI 优化
+        </button>
+      </view>
+      <textarea
+        class="textarea"
+        placeholder="在这里输入你的 Prompt..."
+        value="{{content}}"
+        bindinput="onContentInput"
+        maxlength="-1"
+      />
+    </view>
+
+    <view class="footer-actions flex-row">
+      <button class="btn-secondary flex-1" bindtap="onCancel">取消</button>
+      <button
+        class="btn-primary flex-1"
+        loading="{{saving}}"
+        disabled="{{saving || !title || !content}}"
+        bindtap="onSave"
+      >
+        保存
+      </button>
+    </view>
+  </view>
+</view>

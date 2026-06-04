@@ -24,7 +24,7 @@
 - [x] Tauri 桌面端
 - [x] Capacitor 移动端
 - [ ] Android APK 打包验证
-- [ ] 微信小程序
+- [x] 微信小程序
 
 ## 快速开始
 
@@ -60,7 +60,7 @@ prompt-manager/
 │   ├── web/                 # Web应用
 │   ├── desktop/            # Tauri桌面端
 │   ├── mobile/             # Capacitor移动端
-│   └── miniprogram/         # 微信小程序 (待实现)
+│   └── miniprogram/         # 微信小程序
 ├── packages/
 │   └── shared/              # 共享类型定义
 ├── supabase/
@@ -95,6 +95,19 @@ pnpm --filter mobile open:android
 ```
 
 ### 7. 浏览器插件
+
+```bash
+pnpm dev:extension
+pnpm build:extension
+```
+
+### 8. 微信小程序
+
+详见 [apps/miniprogram/README.md](apps/miniprogram/README.md)。
+
+1. 复制 `apps/miniprogram/config/config.example.ts` 为 `config.ts`，填入 Supabase 配置
+2. 用微信开发者工具打开 `apps/miniprogram` 目录
+3. 在公众平台配置 Supabase 域名为 request 合法域名
 
 ## License
 

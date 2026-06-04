@@ -3,6 +3,10 @@ node_modules
 apps/extension/dist
 apps/extension/node_modules
 
+# WeChat miniprogram
+apps/miniprogram/node_modules
+apps/miniprogram/project.private.config.json
+
 # Tauri
 apps/desktop/src-tauri/target/
 apps/desktop/src-tauri/gen/

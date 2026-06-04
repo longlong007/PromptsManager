@@ -1,0 +1,167 @@
+page {
+  background-color: #f3f4f6;
+  color: #111827;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.container {
+  padding: 24rpx 32rpx 48rpx;
+}
+
+.card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16rpx;
+}
+
+.text-muted {
+  color: #6b7280;
+  font-size: 24rpx;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  padding: 20rpx 32rpx;
+  border: none;
+  line-height: 1.4;
+}
+
+.btn-primary[disabled] {
+  opacity: 0.5;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  padding: 20rpx 32rpx;
+  border: none;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: #fff;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  padding: 20rpx 32rpx;
+  border: none;
+}
+
+.btn-purple {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  padding: 16rpx 28rpx;
+  border: none;
+}
+
+.input,
+.textarea,
+.picker-wrap {
+  width: 100%;
+  box-sizing: border-box;
+  border: 2rpx solid #d1d5db;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  background: #fff;
+}
+
+.textarea {
+  min-height: 320rpx;
+  font-family: monospace;
+}
+
+.label {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 12rpx;
+}
+
+.form-group {
+  margin-bottom: 28rpx;
+}
+
+.tag {
+  display: inline-block;
+  padding: 6rpx 16rpx;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 22rpx;
+  border-radius: 8rpx;
+  margin-right: 12rpx;
+  margin-top: 8rpx;
+}
+
+.empty {
+  text-align: center;
+  padding: 80rpx 32rpx;
+  color: #9ca3af;
+}
+
+.stats-grid {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.stat-item {
+  flex: 1;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+.stat-value {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 8rpx;
+}
+
+.flex-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -1,0 +1,18 @@
+.top-actions {
+  margin-bottom: 20rpx;
+  gap: 16rpx;
+}
+
+.link {
+  color: #2563eb;
+  font-size: 26rpx;
+}
+
+.footer-actions {
+  margin-top: 32rpx;
+  gap: 20rpx;
+}
+
+.picker-wrap {
+  color: #111827;
+}

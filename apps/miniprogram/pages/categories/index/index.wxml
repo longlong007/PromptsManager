@@ -1,0 +1,86 @@
+<view class="container">
+  <view class="card">
+    <text class="card-title">新建分类</text>
+    <view class="form-group">
+      <text class="label">分类名称</text>
+      <input
+        class="input"
+        placeholder="输入分类名称"
+        value="{{newName}}"
+        bindinput="onNewNameInput"
+      />
+    </view>
+    <view class="form-group">
+      <text class="label">父分类（可选，二级分类）</text>
+      <picker
+        mode="selector"
+        range="{{parentNames}}"
+        value="{{parentIndex}}"
+        bindchange="onParentChange"
+      >
+        <view class="picker-wrap">{{parentNames[parentIndex]}}</view>
+      </picker>
+    </view>
+    <button
+      class="btn-primary"
+      loading="{{creating}}"
+      disabled="{{creating || !newName}}"
+      bindtap="onCreate"
+    >
+      添加分类
+    </button>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty">加载中...</view>
+  <view wx:elif="{{treeItems.length === 0}}" class="empty">暂无分类</view>
+
+  <view wx:else>
+    <view
+      wx:for="{{treeItems}}"
+      wx:key="id"
+      class="card category-item"
+      style="margin-left: {{item.indent}}rpx"
+    >
+      <view class="flex-between">
+        <view class="flex-1">
+          <text class="cat-name">{{item.name}}</text>
+          <text wx:if="{{item.isChild}}" class="text-muted child-badge">子分类</text>
+        </view>
+        <view class="sort-actions flex-row">
+          <text class="sort-btn" data-id="{{item.id}}" data-dir="up" bindtap="onMove">↑</text>
+          <text class="sort-btn" data-id="{{item.id}}" data-dir="down" bindtap="onMove">↓</text>
+        </view>
+      </view>
+      <view class="cat-actions flex-row">
+        <text class="action-link" data-id="{{item.id}}" data-name="{{item.name}}" data-parent="{{item.parent_id}}" bindtap="onEdit">编辑</text>
+        <text class="action-link danger" data-id="{{item.id}}" bindtap="onDelete">删除</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 编辑弹层 -->
+<view wx:if="{{editVisible}}" class="modal-mask" bindtap="onCloseEdit">
+  <view class="modal-card" catchtap="">
+    <text class="card-title">编辑分类</text>
+    <view class="form-group">
+      <text class="label">名称</text>
+      <input class="input" value="{{editName}}" bindinput="onEditNameInput" />
+    </view>
+    <view class="form-group">
+      <text class="label">父分类</text>
+      <picker
+        mode="selector"
+        range="{{editParentNames}}"
+        value="{{editParentIndex}}"
+        bindchange="onEditParentChange"
+      >
+        <view class="picker-wrap">{{editParentNames[editParentIndex]}}</view>
+      </picker>
+    </view>
+    <view class="footer-actions flex-row">
+      <button class="btn-secondary flex-1" bindtap="onCloseEdit">取消</button>
+      <button class="btn-primary flex-1" bindtap="onSaveEdit">保存</button>
+    </view>
+  </view>
+</view>

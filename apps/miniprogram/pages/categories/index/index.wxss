@@ -1,0 +1,58 @@
+.category-item {
+  padding: 24rpx 28rpx;
+}
+
+.cat-name {
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.child-badge {
+  margin-left: 12rpx;
+  font-size: 22rpx;
+}
+
+.sort-btn {
+  padding: 8rpx 20rpx;
+  background: #f3f4f6;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #374151;
+}
+
+.cat-actions {
+  margin-top: 16rpx;
+  gap: 24rpx;
+}
+
+.action-link {
+  font-size: 26rpx;
+  color: #2563eb;
+}
+
+.action-link.danger {
+  color: #dc2626;
+}
+
+.modal-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 32rpx;
+  box-sizing: border-box;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 640rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+}

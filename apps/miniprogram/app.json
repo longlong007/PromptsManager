@@ -1,0 +1,39 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/index/index",
+    "pages/prompts/list/list",
+    "pages/prompts/detail/detail",
+    "pages/categories/index/index"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#2563eb",
+    "navigationBarTitleText": "Prompt Manager",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f3f4f6",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#6b7280",
+    "selectedColor": "#2563eb",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/prompts/list/list",
+        "text": "Prompt"
+      },
+      {
+        "pagePath": "pages/categories/index/index",
+        "text": "分类"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}
