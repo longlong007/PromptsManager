@@ -5,6 +5,8 @@ node_modules
 .cursor/debug*.log
 apps/extension/dist
 apps/extension/node_modules
+apps/ide-extension/dist
+apps/ide-extension/node_modules
 
 # WeChat miniprogram
 apps/miniprogram/node_modules

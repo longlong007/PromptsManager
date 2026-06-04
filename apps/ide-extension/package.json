@@ -1,0 +1,74 @@
+{
+  "name": "ide-extension",
+  "displayName": "AI Prompt Manager",
+  "description": "Manage prompts in VS Code / Cursor sidebar — same UI as the browser extension.",
+  "version": "1.0.0",
+  "private": true,
+  "publisher": "prompt-manager",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onStartupFinished",
+    "onView:promptManager.sidebar",
+    "onCommand:promptManager.openSidebar",
+    "onCommand:promptManager.insertFromPicker"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "promptManager",
+          "title": "Prompt Manager",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "promptManager": [
+        {
+          "type": "webview",
+          "id": "promptManager.sidebar",
+          "name": "Prompts"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "promptManager.openSidebar",
+        "title": "Prompt Manager: Open Sidebar"
+      },
+      {
+        "command": "promptManager.insertFromPicker",
+        "title": "Prompt Manager: Insert Prompt at Cursor"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "pnpm run build:webview && tsc -p tsconfig.json",
+    "build:webview": "vite build --config webview/vite.config.ts",
+    "watch:extension": "tsc -p tsconfig.json -w",
+    "watch:webview": "vite build --config webview/vite.config.ts --watch",
+    "dev": "pnpm run compile",
+    "package": "pnpm run compile && vsce package --no-dependencies"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/vscode": "^1.85.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "@vscode/vsce": "^3.2.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.428.0",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2"
+  }
+}

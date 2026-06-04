@@ -22,6 +22,7 @@
 - [x] 一键复制
 - [x] AI 优化 Prompt
 - [x] Tauri 桌面端
+- [x] VS Code / Cursor IDE 扩展（侧栏 Webview，UI 同浏览器扩展）
 - [x] Capacitor 移动端
 - [ ] Android APK 打包验证
 - [x] 微信小程序
@@ -59,6 +60,7 @@ prompt-manager/
 ├── apps/
 │   ├── web/                 # Web应用
 │   ├── desktop/            # Tauri桌面端
+│   ├── ide-extension/      # VS Code / Cursor 扩展
 │   ├── mobile/             # Capacitor移动端
 │   └── miniprogram/         # 微信小程序
 ├── packages/
@@ -115,7 +117,17 @@ pnpm dev:extension
 pnpm build:extension
 ```
 
-### 8. 微信小程序
+### 8. VS Code / Cursor IDE 扩展
+
+侧栏 Webview + React，UI 与浏览器扩展一致。详见 [apps/ide-extension/README.md](apps/ide-extension/README.md)。
+
+```bash
+pnpm build:ide
+```
+
+在 `apps/ide-extension` 目录用 VS Code / Cursor 打开后按 **F5** 调试；或 `pnpm package:ide` 生成 `.vsix` 安装。
+
+### 9. 微信小程序
 
 详见 [apps/miniprogram/README.md](apps/miniprogram/README.md)。
 

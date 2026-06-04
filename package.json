@@ -12,6 +12,9 @@
     "build:mobile": "pnpm --filter mobile build",
     "dev:extension": "pnpm --filter extension dev",
     "build:extension": "pnpm --filter extension build",
+    "dev:ide": "pnpm --filter ide-extension compile",
+    "build:ide": "pnpm --filter ide-extension compile",
+    "package:ide": "pnpm --filter ide-extension package",
     "typecheck:miniprogram": "pnpm --filter miniprogram typecheck"
   },
   "workspaces": [
