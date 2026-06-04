@@ -1,5 +1,8 @@
 node_modules
 .env
+
+# Cursor IDE debug logs
+.cursor/debug*.log
 apps/extension/dist
 apps/extension/node_modules
 
