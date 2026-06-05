@@ -7,7 +7,7 @@
 | 层级 | 技术方案 |
 |------|----------|
 | 前端框架 | React 18 + TypeScript |
-| 跨端方案 | Tauri 2.x (桌面) + Capacitor (移动端) |
+| 跨端方案 | Tauri 2.x (桌面) + Capacitor (移动端) + **Flutter (Android/iOS)** |
 | 样式方案 | Tailwind CSS |
 | 云端服务 | Supabase (认证 + PostgreSQL数据库) |
 | 状态管理 | React Context |
@@ -24,6 +24,7 @@
 - [x] Tauri 桌面端
 - [x] VS Code / Cursor IDE 扩展（侧栏 Webview，UI 同浏览器扩展）
 - [x] Capacitor 移动端
+- [x] Flutter 移动端 (Android / iOS)
 - [ ] Android APK 打包验证
 - [x] 微信小程序
 
@@ -62,6 +63,7 @@ prompt-manager/
 │   ├── desktop/            # Tauri桌面端
 │   ├── ide-extension/      # VS Code / Cursor 扩展
 │   ├── mobile/             # Capacitor移动端
+│   ├── flutter/            # Flutter 移动端 (Android / iOS)
 │   └── miniprogram/         # 微信小程序
 ├── packages/
 │   └── shared/              # 共享类型定义
@@ -108,6 +110,23 @@ pnpm dev:desktop
 ```bash
 pnpm build:mobile
 pnpm --filter mobile open:android
+```
+
+### 6b. Flutter 移动端 (Android / iOS)
+
+推荐使用 Flutter 构建原生移动端，详见 [apps/flutter/README.md](apps/flutter/README.md)。
+
+```bash
+cd apps/flutter
+cp .env.example .env   # 填入 Supabase 配置
+flutter pub get
+flutter run
+```
+
+构建 APK：
+
+```bash
+pnpm build:flutter:apk
 ```
 
 ### 7. 浏览器插件

@@ -16,6 +16,12 @@ apps/miniprogram/project.private.config.json
 apps/desktop/src-tauri/target/
 apps/desktop/src-tauri/gen/
 
+# Flutter
+apps/flutter/.env
+apps/flutter/.dart_tool/
+apps/flutter/build/
+apps/flutter/.flutter-plugins-dependencies
+
 # Capacitor
 apps/mobile/android/.gradle/
 apps/mobile/android/app/build/

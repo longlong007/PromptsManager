@@ -15,7 +15,9 @@
     "dev:ide": "pnpm --filter ide-extension compile",
     "build:ide": "pnpm --filter ide-extension compile",
     "package:ide": "pnpm --filter ide-extension package",
-    "typecheck:miniprogram": "pnpm --filter miniprogram typecheck"
+    "typecheck:miniprogram": "pnpm --filter miniprogram typecheck",
+    "dev:flutter": "cd apps/flutter && flutter run",
+    "build:flutter:apk": "cd apps/flutter && flutter build apk --release"
   },
   "workspaces": [
     "apps/*",
