@@ -1,82 +1,171 @@
 # AI Prompt 管理器 - 项目架构图
 
-## 1. 整体架构图
+## 1. 整体多端架构
 
 ```mermaid
 graph TB
-    subgraph 前端层["前端层 (React 18)"]
-        App[App.tsx<br>根组件]
-        Router[React Router<br>路由管理]
-
-        subgraph Pages["页面组件"]
-            Login[LoginPage<br>登录页]
-            Dashboard[DashboardPage<br>仪表盘]
-            PromptList[PromptListPage<br>Prompt列表]
-            PromptDetail[PromptDetailPage<br>Prompt详情]
-            Settings[SettingsPage<br>设置页]
-        end
-
-        subgraph Contexts["状态管理"]
-            AuthCtx[AuthContext<br>认证状态]
-            PromptCtx[PromptContext<br>Prompt状态]
-        end
-
-        subgraph Lib["工具库"]
-            Supabase[supabase.ts<br>Supabase客户端]
-        end
+    subgraph Clients[客户端层]
+        Web[apps_web]
+        Desktop[apps_desktop]
+        Mobile[apps_mobile]
+        Extension[apps_extension]
+        Mini[apps_miniprogram]
     end
 
-    subgraph 后端层["后端层 (Supabase)"]
-        Auth[Supabase Auth<br>用户认证]
-        DB[(PostgreSQL<br>数据库)]
-
-        subgraph Tables["数据表"]
-            Profiles[profiles<br>用户表]
-            Categories[categories<br>分类表]
-            Prompts[prompts<br>Prompt表]
-        end
+    subgraph Shared[共享层]
+        Pkg[packages_shared]
     end
 
-    App --> Router
-    Router --> Pages
-    Pages --> Contexts
-    Contexts --> Lib
-    Lib --> Supabase
-    Supabase --> Auth
-    Supabase --> DB
-    Auth --> DB
+    subgraph Backend[后端层]
+        Auth[Supabase_Auth]
+        DB[(PostgreSQL)]
+        Fn[Edge_Function]
+    end
+
+    Desktop --> Web
+    Mobile --> Web
+    Web --> Auth
+    Web --> DB
+    Web --> Fn
+    Extension --> Auth
+    Extension --> DB
+    Extension --> Fn
+    Mini --> Auth
+    Mini --> DB
+    Mini --> Fn
+    Web -.-> Pkg
 ```
 
 ---
 
-## 2. 组件结构图
+## 2. Web 应用架构
 
 ```mermaid
 graph TB
-    App --> AuthProvider
-    App --> PromptProvider
-    App --> BrowserRouter
+    subgraph WebApp[apps_web]
+        App[App.tsx]
+        Router[React_Router]
+        subgraph Pages[页面]
+            Login[LoginPage]
+            Dashboard[DashboardPage]
+            PromptList[PromptListPage]
+            PromptDetail[PromptDetailPage]
+            Settings[SettingsPage]
+        end
+        subgraph Contexts[状态管理]
+            AuthCtx[AuthContext]
+            PromptCtx[PromptContext]
+        end
+        Supabase[lib_supabase.ts]
+    end
 
-    BrowserRouter --> Routes
-    Routes --> Route1["/login → LoginPage"]
-    Routes --> Route2["/ → DashboardPage"]
-    Routes --> Route3["/prompts → PromptListPage"]
-    Routes --> Route4["/prompts/:id → PromptDetailPage"]
-    Routes --> Route5["/settings → SettingsPage"]
-
-    AuthProvider --> AuthCtx
-    PromptProvider --> PromptCtx
-
-    AuthCtx --> supabase
-    PromptCtx --> supabase
-
-    supabase -.-> Auth
-    supabase -.-> DB
+    App --> Router --> Pages
+    Pages --> Contexts --> Supabase
 ```
 
 ---
 
-## 3. 数据库模型图
+## 3. 浏览器扩展架构
+
+```mermaid
+flowchart TB
+    subgraph Build[构建]
+        Vite[vite.config.ts]
+        Dist[dist]
+    end
+
+    subgraph Chrome[Chrome_扩展_MV3]
+        Manifest[manifest.json]
+        SW[background.js]
+        CS[content.js]
+        Side[sidepanel.html]
+        Popup[popup.html]
+        Opt[options.html]
+    end
+
+    subgraph UI[界面层]
+        App[App.tsx]
+        Hook[usePromptData.ts]
+    end
+
+    subgraph Local[本地持久化]
+        Storage[storage.ts]
+        Mock[mockData.ts]
+    end
+
+    subgraph Remote[远端]
+        SB[supabase.ts]
+        RT[runtime.ts]
+    end
+
+    subgraph BG[后台能力]
+        Sync[syncService.ts]
+        Menu[contextMenus.ts]
+        Insert[tabInsert.ts]
+        Clip[promptClipService.ts]
+        Msg[messaging.ts]
+    end
+
+    Vite --> Dist --> Manifest
+    Manifest --> SW
+    Manifest --> CS
+    Manifest --> Side
+    Side --> App --> Hook
+    Hook --> Storage
+    Hook --> Mock
+    Hook --> SB
+    App --> SB
+    SB --> RT
+    SW --> Sync
+    SW --> Menu
+    SW --> Insert
+    SW --> Clip
+    SW --> Msg
+    CS --> Msg
+    Insert --> CS
+```
+
+---
+
+## 4. 微信小程序架构
+
+```mermaid
+graph TB
+    subgraph MP[apps_miniprogram]
+        AppJson[app.json]
+        AppTs[app.ts]
+
+        subgraph PagesMP[页面]
+            PLogin[pages_login]
+            PIndex[pages_index]
+            PList[pages_prompts_list]
+            PDetail[pages_prompts_detail]
+            PCat[pages_categories_index]
+        end
+
+        subgraph Utils[工具层]
+            SB[utils_supabase.ts]
+            Sto[utils_storage.ts]
+            Help[utils_helpers.ts]
+            Types[utils_types.ts]
+        end
+
+        Config[config_config.ts]
+    end
+
+    AppJson --> PagesMP
+    AppTs --> SB
+    PagesMP --> SB
+    PagesMP --> Sto
+    PagesMP --> Help
+    PagesMP --> Types
+    SB --> Config
+    SB --> Sto
+```
+
+---
+
+## 5. 数据库模型
 
 ```mermaid
 erDiagram
@@ -107,131 +196,116 @@ erDiagram
         timestamp updated_at
     }
 
-    profiles ||--o{ categories : "用户拥有"
-    profiles ||--o{ prompts : "用户创建"
-    categories ||--o{ categories : "自关联"
-    categories ||--o{ prompts : "包含"
+    profiles ||--o{ categories : 拥有
+    profiles ||--o{ prompts : 创建
+    categories ||--o{ categories : 自关联
+    categories ||--o{ prompts : 包含
 ```
 
 ---
 
-## 4. 数据流图
+## 6. 跨端数据流
 
 ```mermaid
 flowchart LR
-    subgraph 前端["前端 React"]
-        UI["UI组件<br/>Pages"]
-        State["状态管理<br/>Context"]
-        API["API调用<br/>supabase.ts"]
+    subgraph Web端[Web_Desktop_Mobile]
+        WUI[React_Pages]
+        WCtx[Context_状态]
+        WAPI[supabase-js]
     end
 
-    subgraph 请求["HTTP请求"]
-        R1["认证请求"]
-        R2["数据请求"]
+    subgraph 扩展端[Extension]
+        EUI[App.tsx]
+        EHook[usePromptData]
+        ELocal[chrome_storage]
+        EAPI[supabase-js]
     end
 
-    subgraph Supabase["Supabase"]
-        Auth["Auth<br/>认证服务"]
-        DB["PostgreSQL<br/>数据库"]
+    subgraph 小程序[Miniprogram]
+        MUI[Page_页面]
+        MLocal[wx_storage]
+        MAPI[wx_request]
     end
 
-    UI --> State
-    State --> API
-    API --> R1
-    API --> R2
-    R1 --> Auth
-    R2 --> DB
-    Auth --> DB
+    subgraph Cloud[Supabase]
+        Auth[Auth]
+        DB[PostgreSQL]
+        Fn[optimize-prompt]
+    end
+
+    WUI --> WCtx --> WAPI
+    EUI --> EHook
+    EHook --> ELocal
+    EHook --> EAPI
+    MUI --> MLocal
+    MUI --> MAPI
+
+    WAPI --> Auth
+    WAPI --> DB
+    WAPI --> Fn
+    EAPI --> Auth
+    EAPI --> DB
+    EAPI --> Fn
+    MAPI --> Auth
+    MAPI --> DB
+    MAPI --> Fn
 ```
 
 ---
 
-## 5. 状态管理架构
+## 7. 扩展消息流（页面插入 Prompt）
 
 ```mermaid
-graph TB
-    subgraph AuthContext["AuthContext"]
-        A1["user: User | null"]
-        A2["loading: boolean"]
-        A3["login()"]
-        A4["logout()"]
-        A5["register()"]
-    end
+sequenceDiagram
+    participant Side as 侧栏_App.tsx
+    participant BG as background.js
+    participant CS as content.js
+    participant Page as 网页输入框
 
-    subgraph PromptContext["PromptContext"]
-        P1["prompts: Prompt[]"]
-        P2["categories: Category[]"]
-        P3["tags: string[]"]
-        P4["selectedPrompt: Prompt | null"]
-        P5["fetchPrompts()"]
-        P6["createPrompt()"]
-        P7["updatePrompt()"]
-        P8["deletePrompt()"]
-        P9["searchPrompts()"]
-    end
-
-    subgraph SupabaseClient["supabase Client"]
-        S1["URL配置"]
-        S2["Anon Key"]
-        S3["createClient()"]
-    end
-
-    AuthContext -.-> SupabaseClient
-    PromptContext -.-> SupabaseClient
+    Side->>BG: APM_INSERT_PROMPT
+    BG->>CS: executeScript_sendMessage
+    CS->>Page: 查找_textarea
+    CS->>Page: 写入_Prompt_内容
+    CS->>Page: 触发_input_事件
+    CS-->>BG: 插入结果
+    BG-->>Side: 响应_Toast
 ```
 
 ---
 
-## 6. 技术栈总览
+## 8. 技术栈总览
 
 ```mermaid
 mindmap
-    root((AI Prompt<br/>管理器))
-        前端框架
-            React 18
-            TypeScript 5
-            Vite 5
-        路由管理
-            React Router DOM 6
-        状态管理
-            React Context
-        样式方案
-            Tailwind CSS 3
-            PostCSS
-        图标库
-            Lucide React
-        云端服务
-            Supabase
+    root(AI_Prompt_管理器)
+        Web端
+            React_18
+            TypeScript_5
+            Vite_5
+            Tailwind_CSS
+            React_Router
+            React_Context
+        桌面端
+            Tauri_2
+            Rust_WebView
+        移动端
+            Capacitor_7
+            Android
+        浏览器扩展
+            Chrome_MV3
+            React_Vite
+            chrome_storage
+            Service_Worker
+            Content_Script
+        微信小程序
+            原生框架
+            TypeScript
+            wx_request
+        云端
+            Supabase_Auth
             PostgreSQL
-            Auth
+            Edge_Functions
         包管理
-            pnpm 9
+            pnpm_9
             Monorepo
-```
-
----
-
-## 7. 文件依赖关系
-
-```mermaid
-graph TD
-    main["main.tsx<br/>入口文件"]
-    App["App.tsx<br/>根组件"]
-    AuthCtx["AuthContext.tsx<br/>认证上下文"]
-    PromptCtx["PromptContext.tsx<br/>Prompt上下文"]
-    supabase["supabase.ts<br/>Supabase客户端"]
-    types["types/index.ts<br/>类型定义"]
-
-    main --> App
-    App --> AuthCtx
-    App --> PromptCtx
-    AuthCtx --> supabase
-    PromptCtx --> supabase
-    supabase --> types
-
-    Login["pages/LoginPage.tsx"] --> AuthCtx
-    Dashboard["pages/DashboardPage.tsx"] --> PromptCtx
-    PromptList["pages/PromptListPage.tsx"] --> PromptCtx
-    PromptDetail["pages/PromptDetailPage.tsx"] --> PromptCtx
-    Settings["pages/SettingsPage.tsx"] --> PromptCtx
 ```

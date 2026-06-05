@@ -1,114 +1,186 @@
 # AI Prompt 管理器 - 模块依赖图
 
-## 1. 模块依赖总览
+## 1. Monorepo 模块总览
 
 ```mermaid
 graph TD
-    %% 入口层
-    main["main.tsx<br/>入口文件"]
+    subgraph Web[apps_web]
+        W_main[main.tsx]
+        W_App[App.tsx]
+        W_Auth[AuthContext]
+        W_Prompt[PromptContext]
+        W_SB[lib_supabase.ts]
+        W_Pages[pages]
+    end
 
-    %% 根组件
-    App["App.tsx<br/>根组件"]
+    subgraph Extension[apps_extension]
+        E_main[main.tsx]
+        E_App[App.tsx]
+        E_Hook[usePromptData.ts]
+        E_BG[background.ts]
+        E_CS[content_contentScript.ts]
+        E_SB[supabase.ts]
+        E_Storage[storage.ts]
+    end
 
-    %% Context 层
-    AuthCtx["AuthContext.tsx<br/>认证上下文"]
-    PromptCtx["PromptContext.tsx<br/>Prompt上下文"]
+    subgraph Miniprogram[apps_miniprogram]
+        M_App[app.ts]
+        M_Pages[pages]
+        M_SB[utils_supabase.ts]
+        M_Storage[utils_storage.ts]
+        M_Config[config_config.ts]
+    end
 
-    %% Lib 层
-    supabase["supabase.ts<br/>Supabase客户端"]
-    types["types/index.ts<br/>类型定义"]
+    subgraph Shared[packages_shared]
+        S_types[src_index.ts]
+    end
 
-    %% Pages 层
-    Login["pages/LoginPage.tsx<br/>登录页"]
-    Dashboard["pages/DashboardPage.tsx<br/>仪表盘"]
-    PromptList["pages/PromptListPage.tsx<br/>Prompt列表"]
-    PromptDetail["pages/PromptDetailPage.tsx<br/>Prompt详情"]
-    Settings["pages/SettingsPage.tsx<br/>设置页"]
+    subgraph External[外部依赖]
+        SB_JS[supabase_js]
+        React[react]
+        Chrome[chrome_API]
+        WX[wx_API]
+    end
 
-    %% 外部依赖
-    react["react-router-dom"]
-    lucide["lucide-react"]
-    supabase_lib["@supabase/supabase-js"]
+    W_main --> W_App --> W_Auth & W_Prompt --> W_SB --> SB_JS
+    W_App --> W_Pages --> W_Auth & W_Prompt
+    W_Prompt -.-> S_types
 
-    %% 依赖关系
-    main --> App
-    App --> AuthCtx
-    App --> PromptCtx
-    App --> react
+    E_main --> E_App --> E_Hook
+    E_App --> E_SB
+    E_Hook --> E_Storage & E_SB
+    E_BG --> E_Storage & E_SB
+    E_App --> React
+    E_SB --> SB_JS
+    E_Storage --> Chrome
 
-    AuthCtx --> supabase
-    PromptCtx --> supabase
-    PromptCtx --> types
-    PromptCtx --> AuthCtx
-
-    supabase --> supabase_lib
-
-    Login --> AuthCtx
-    Login --> react
-
-    Dashboard --> AuthCtx
-    Dashboard --> PromptCtx
-    Dashboard --> react
-
-    PromptList --> AuthCtx
-    PromptList --> PromptCtx
-    PromptList --> types
-    PromptList --> react
-    PromptList --> lucide
-
-    PromptDetail --> PromptCtx
-    PromptDetail --> types
-    PromptDetail --> react
-    PromptDetail --> lucide
-
-    Settings --> PromptCtx
-    Settings --> react
+    M_App --> M_SB
+    M_Pages --> M_SB & M_Storage
+    M_SB --> M_Config & M_Storage
+    M_SB --> WX
+    M_Storage --> WX
 ```
 
 ---
 
-## 2. Context 依赖详解
+## 2. Web 模块依赖
 
 ```mermaid
-graph LR
-    subgraph AuthContext["AuthContext"]
-        direction TB
-        A1["user: User | null"]
-        A2["session: Session | null"]
-        A3["loading: boolean"]
-        A4["signIn()"]
-        A5["signUp()"]
-        A6["signOut()"]
-        A7["signInWithGoogle()"]
-    end
+graph TD
+    main[main.tsx] --> App[App.tsx]
+    App --> AuthCtx[AuthContext.tsx]
+    App --> PromptCtx[PromptContext.tsx]
+    App --> Router[react-router-dom]
 
-    subgraph PromptContext["PromptContext"]
-        direction TB
-        P1["prompts: Prompt[]"]
-        P2["categories: Category[]"]
-        P3["loading: boolean"]
-        P4["error: string | null"]
-        P5["fetchPrompts()"]
-        P6["createPrompt()"]
-        P7["updatePrompt()"]
-        P8["deletePrompt()"]
-        P9["fetchCategories()"]
-        P10["createCategory()"]
-        P11["searchPrompts()"]
-    end
+    AuthCtx --> supabase[lib_supabase.ts]
+    PromptCtx --> supabase
+    PromptCtx --> types[types_index.ts]
+    PromptCtx --> AuthCtx
 
-    subgraph External["外部依赖"]
-        supabase["supabase.ts"]
-    end
+    Login[LoginPage] --> AuthCtx
+    Dashboard[DashboardPage] --> AuthCtx & PromptCtx
+    PromptList[PromptListPage] --> AuthCtx & PromptCtx & types
+    PromptDetail[PromptDetailPage] --> PromptCtx & types
+    Settings[SettingsPage] --> PromptCtx
 
-    AuthContext --> supabase
-    PromptContext --> supabase
-    PromptContext --> AuthContext
+    supabase --> SB_JS[supabase_js]
 ```
 
 ---
 
-## 3. 数据类型依赖
+## 3. Extension 模块依赖
+
+```mermaid
+flowchart TB
+    subgraph UI[UI_入口]
+        mainE[main.tsx] --> AppE[App.tsx]
+    end
+
+    AppE --> Hook[usePromptData.ts]
+    AppE --> SB[supabase.ts]
+    AppE --> RT[runtime.ts]
+    AppE --> TY[types.ts]
+    AppE --> Ins[insertPrompt.ts]
+
+    Hook --> Mock[mockData.ts]
+    Hook --> Sto[storage.ts]
+    Hook --> Sync[syncService.ts]
+    Hook --> SB
+    Hook --> TY
+
+    Ins --> Msg[messaging.ts]
+
+    subgraph BG[Service_Worker]
+        background[background.ts]
+    end
+
+    background --> Menu[contextMenus.ts]
+    background --> Sync
+    background --> Clip[promptClipService.ts]
+    background --> TabIns[tabInsert.ts]
+    background --> Msg
+    background --> Sto
+
+    Clip --> Sto & SB
+    Sync --> Sto & SB
+    Menu --> Sto
+    TabIns --> Msg
+
+    subgraph CS[Content_Script]
+        content[contentScript.ts]
+    end
+
+    SB --> RT & TY
+    Sto --> TY
+    Mock --> TY
+    Sync --> TY
+
+    subgraph idle[暂无引用]
+        Store[store.ts]
+        Browser[browser.ts]
+        ManifestTs[manifest.ts]
+    end
+
+    AppE -.-> React
+    SB -.-> SB_JS
+```
+
+---
+
+## 4. Miniprogram 模块依赖
+
+```mermaid
+graph TD
+    appMP[app.ts] --> SBMP[utils_supabase.ts]
+
+    subgraph PagesMP[pages]
+        login[login_login.ts]
+        index[index_index.ts]
+        list[prompts_list_list.ts]
+        detail[prompts_detail_detail.ts]
+        categories[categories_index_index.ts]
+    end
+
+    login --> SBMP
+    index --> SBMP & StoMP[utils_storage.ts] & Help[utils_helpers.ts] & TypesMP[utils_types.ts]
+    list --> SBMP & StoMP & TypesMP
+    detail --> SBMP & StoMP & Help & TypesMP
+    categories --> SBMP & Help & TypesMP
+
+    SBMP --> Config[config_config.ts]
+    SBMP --> StoMP
+    SBMP --> TypesMP
+    StoMP --> TypesMP
+    Help --> TypesMP
+
+    SBMP -.-> WX[wx_request]
+    StoMP -.-> WX[wx_storage]
+    Help -.-> WX[wx_setClipboardData]
+```
+
+---
+
+## 5. 共享类型与各端对齐
 
 ```mermaid
 classDiagram
@@ -117,7 +189,7 @@ classDiagram
         +string user_id
         +string title
         +string content
-        +string | null category_id
+        +string category_id
         +string[] tags
         +Variable[] variables
         +number usage_count
@@ -129,7 +201,7 @@ classDiagram
         +string id
         +string user_id
         +string name
-        +string | null parent_id
+        +string parent_id
         +number sort_order
         +string created_at
     }
@@ -137,223 +209,130 @@ classDiagram
     class Variable {
         +string name
         +string description
-        +string | undefined default_value
+        +string default_value
     }
 
-    class CreatePromptInput {
-        +string title
-        +string content
-        +string | null category_id
-        +string[] tags
-        +Variable[] variables
-    }
+    class SharedTypes
+    class WebTypes
+    class ExtTypes
+    class MpTypes
 
-    class CreateCategoryInput {
-        +string name
-        +string | null parent_id
-        +number sort_order
-    }
-
-    Prompt --> CreatePromptInput : creates
-    Category --> CreateCategoryInput : creates
-    Prompt --> Variable : contains
+    SharedTypes ..> Prompt
+    SharedTypes ..> Category
+    WebTypes ..> Prompt
+    ExtTypes ..> Prompt
+    MpTypes ..> Prompt
 ```
 
 ---
 
-## 4. 页面路由与依赖
-
-```mermaid
-graph TD
-    Router["React Router<br/>路由配置"]
-
-    Route1["/login<br/>→ LoginPage"]
-    Route2["/<br/>→ DashboardPage"]
-    Route3["/prompts<br/>→ PromptListPage"]
-    Route4["/prompts/:id<br/>→ PromptDetailPage"]
-    Route5["/settings<br/>→ SettingsPage"]
-
-    Router --> Route1
-    Router --> Route2
-    Router --> Route3
-    Router --> Route4
-    Router --> Route5
-
-    Route1 --> Login["LoginPage"]
-    Route2 --> Dashboard["DashboardPage"]
-    Route3 --> PromptList["PromptListPage"]
-    Route4 --> PromptDetail["PromptDetailPage"]
-    Route5 --> Settings["SettingsPage"]
-
-    Login --> Auth["AuthContext<br/>useAuth()"]
-    Dashboard --> Auth
-    Dashboard --> Prompt["PromptContext<br/>usePrompts()"]
-    PromptList --> Auth
-    PromptList --> Prompt
-    PromptList --> Types["types/index.ts"]
-    PromptDetail --> Prompt
-    PromptDetail --> Types
-    Settings --> Prompt
-```
-
----
-
-## 5. Supabase 数据操作依赖
+## 6. Supabase 数据操作依赖
 
 ```mermaid
 flowchart TD
-    subgraph Pages["页面组件"]
-        LoginPage
-        DashboardPage
-        PromptListPage
-        PromptDetailPage
-        SettingsPage
+    subgraph WebOps[Web_supabase-js]
+        WAuth[supabase.auth]
+        WDB[supabase.from]
     end
 
-    subgraph Contexts["状态管理"]
-        AuthCtx
-        PromptCtx
+    subgraph ExtOps[Extension_supabase-js]
+        EAuth[supabase.auth]
+        EDB[supabase.from]
+        EFn[optimizePromptWithAI]
     end
 
-    subgraph SupabaseClient["Supabase Client"]
-        Auth["supabase.auth"]
-        DB["supabase.from()"]
+    subgraph MpOps[Miniprogram_wx.request]
+        MAuth[auth_v1]
+        MDB[rest_v1]
+        MFn[functions_v1]
     end
 
-    subgraph Tables["数据表"]
-        Profiles["profiles"]
-        Categories["categories"]
-        Prompts["prompts"]
+    subgraph Tables[数据表]
+        Profiles[profiles]
+        Categories[categories]
+        Prompts[prompts]
     end
 
-    LoginPage --> AuthCtx
-    AuthCtx --> Auth
-    Auth --> Profiles
+    subgraph EdgeFn[Edge_Function]
+        Optimize[optimize-prompt]
+    end
 
-    DashboardPage --> PromptCtx
-    PromptListPage --> PromptCtx
-    PromptDetailPage --> PromptCtx
-    SettingsPage --> PromptCtx
-
-    PromptCtx --> DB
-    DB --> Categories
-    DB --> Prompts
+    WAuth --> Profiles
+    WDB --> Categories & Prompts
+    EAuth --> Profiles
+    EDB --> Categories & Prompts
+    EFn --> Optimize
+    MAuth --> Profiles
+    MDB --> Categories & Prompts
+    MFn --> Optimize
 ```
 
 ---
 
-## 6. 模块层次结构
+## 7. 模块层次结构（按端）
 
 ```mermaid
 graph TB
-    subgraph Layer1["第1层：入口"]
-        main["main.tsx"]
+    subgraph WebLayers[Web_Desktop_Mobile]
+        W1[L1_main.tsx]
+        W2[L2_App.tsx_Router]
+        W3[L3_Context]
+        W4[L4_Pages]
+        W5[L5_lib_supabase.ts]
+        W6[L6_supabase_js]
+        W1 --> W2 --> W3 --> W4 --> W5 --> W6
     end
 
-    subgraph Layer2["第2层：根组件"]
-        App["App.tsx"]
+    subgraph ExtLayers[Extension]
+        E1[L1_main.tsx_background.ts]
+        E2[L2_App.tsx_路由]
+        E3[L3_usePromptData_contextMenus]
+        E4[L4_storage_supabase_messaging]
+        E5[L5_chrome_supabase_js]
+        E1 --> E2 --> E3 --> E4 --> E5
     end
 
-    subgraph Layer3["第3层：路由 & Context"]
-        Router["React Router"]
-        AuthCtx["AuthContext"]
-        PromptCtx["PromptContext"]
+    subgraph MpLayers[Miniprogram]
+        M1[L1_app.ts]
+        M2[L2_pages]
+        M3[L3_utils_supabase_storage_helpers]
+        M4[L4_config]
+        M5[L5_wx_API]
+        M1 --> M2 --> M3 --> M4 --> M5
     end
-
-    subgraph Layer4["第4层：页面组件"]
-        Login["LoginPage"]
-        Dashboard["DashboardPage"]
-        PromptList["PromptListPage"]
-        PromptDetail["PromptDetailPage"]
-        Settings["SettingsPage"]
-    end
-
-    subgraph Layer5["第5层：工具库"]
-        supabase["supabase.ts"]
-        types["types/index.ts"]
-    end
-
-    subgraph Layer6["第6层：外部库"]
-        react["react-router-dom"]
-        lucide["lucide-react"]
-        supabase_lib["@supabase/supabase-js"]
-    end
-
-    Layer1 --> Layer2
-    Layer2 --> Layer3
-    Layer3 --> Layer4
-    Layer4 --> Layer5
-    Layer5 --> Layer6
-```
-
----
-
-## 7. 完整导入依赖图
-
-```mermaid
-graph TD
-    %% 入口
-    main["main.tsx"]
-
-    %% 根组件
-    App["App.tsx<br/>import: AuthProvider, PromptProvider, Routes, Route"]
-
-    %% Contexts
-    AuthCtx["contexts/AuthContext.tsx<br/>import: supabase, User, Session"]
-    PromptCtx["contexts/PromptContext.tsx<br/>import: supabase, types, useAuth"]
-
-    %% Lib
-    supabase["lib/supabase.ts<br/>import: @supabase/supabase-js"]
-
-    %% Types
-    types["types/index.ts<br/>export: Prompt, Category, Variable..."]
-
-    %% Pages
-    Login["pages/LoginPage.tsx<br/>import: useAuth, useNavigate"]
-    Dashboard["pages/DashboardPage.tsx<br/>import: useAuth, usePrompts, useNavigate"]
-    PromptList["pages/PromptListPage.tsx<br/>import: usePrompts, useAuth, types, lucide"]
-    PromptDetail["pages/PromptDetailPage.tsx<br/>import: usePrompts, types, lucide"]
-    Settings["pages/SettingsPage.tsx<br/>import: usePrompts"]
-
-    main --> App
-    App --> AuthCtx
-    App --> PromptCtx
-    App --> Login
-    App --> Dashboard
-    App --> PromptList
-    App --> PromptDetail
-    App --> Settings
-
-    AuthCtx --> supabase
-    PromptCtx --> supabase
-    PromptCtx --> types
-    PromptCtx --> AuthCtx
-
-    Login --> AuthCtx
-    Dashboard --> AuthCtx
-    Dashboard --> PromptCtx
-    PromptList --> AuthCtx
-    PromptList --> PromptCtx
-    PromptList --> types
-    PromptDetail --> PromptCtx
-    PromptDetail --> types
-    Settings --> PromptCtx
 ```
 
 ---
 
 ## 8. 依赖层级表格
 
-| 层级 | 模块 | 依赖模块 | 说明 |
-|------|------|----------|------|
-| 1 | main.tsx | App | React 入口，渲染根组件 |
-| 2 | App.tsx | AuthContext, PromptContext, Router | 提供全局状态和路由 |
-| 3 | AuthContext.tsx | supabase | 用户认证状态管理 |
-| 3 | PromptContext.tsx | supabase, types, AuthContext | Prompt 数据状态管理 |
-| 4 | LoginPage.tsx | AuthContext | 登录页面 |
-| 4 | DashboardPage.tsx | AuthContext, PromptContext | 仪表盘页面 |
-| 4 | PromptListPage.tsx | AuthContext, PromptContext, types | Prompt 列表页面 |
-| 4 | PromptDetailPage.tsx | PromptContext, types | Prompt 详情页面 |
-| 4 | SettingsPage.tsx | PromptContext | 设置页面 |
-| 5 | supabase.ts | @supabase/supabase-js | Supabase 客户端封装 |
-| 5 | types/index.ts | - | TypeScript 类型定义导出 |
+### Web 应用
+
+| 层级 | 模块 | 依赖 | 说明 |
+|------|------|------|------|
+| 1 | main.tsx | App | React 入口 |
+| 2 | App.tsx | AuthContext, PromptContext, Router | 全局状态与路由 |
+| 3 | AuthContext | supabase | 认证状态 |
+| 3 | PromptContext | supabase, types, AuthContext | Prompt 数据 |
+| 4 | pages | 对应 Context | 页面组件 |
+| 5 | supabase.ts | supabase_js | API 客户端 |
+
+### 浏览器扩展
+
+| 层级 | 模块 | 依赖 | 说明 |
+|------|------|------|------|
+| 1 | main.tsx | App | 侧栏_popup_options_共用_SPA |
+| 1 | background.ts | syncService_contextMenus_tabInsert_messaging | Service_Worker |
+| 1 | contentScript.ts | 无_import | 网页注入 |
+| 2 | App.tsx | usePromptData_supabase_insertPrompt | 主_UI |
+| 3 | usePromptData | storage_syncService_supabase | 数据协调 |
+| 4 | storage_supabase | chrome_storage_supabase_js | 持久化与远程 |
+
+### 微信小程序
+
+| 层级 | 模块 | 依赖 | 说明 |
+|------|------|------|------|
+| 1 | app.ts | utils_supabase | 全局入口与会话 |
+| 2 | pages | supabase_storage_helpers_types | 各业务页面 |
+| 3 | utils_supabase | config_storage_types | REST_API_封装 |
+| 4 | config_config.ts | 无 | Supabase_连接配置 |

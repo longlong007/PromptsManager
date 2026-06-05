@@ -6,66 +6,123 @@
 prompt-manager/
 |
 ├── .cursor/                           # Cursor IDE 配置目录
-│   ├── debug-68d062.log              # 调试日志
 │   └── plans/
-│       └── ai_prompt管理器开发计划_efa853b8.plan.md    # 开发计划文档
+│       └── ai_prompt管理器开发计划_efa853b8.plan.md
 │
 ├── apps/                              # 应用目录（monorepo）
-│   └── web/                           # Web 应用（主要应用）
-│       ├── .env                       # 环境变量（包含 Supabase 配置）
-│       ├── .env.example               # 环境变量模板
-│       ├── index.html                 # HTML 入口文件
-│       ├── package.json               # Web 应用依赖配置
-│       ├── postcss.config.js          # PostCSS 配置（处理 CSS）
-│       ├── tailwind.config.js         # Tailwind CSS 配置
-│       ├── tsconfig.json              # TypeScript 配置
-│       ├── tsconfig.node.json         # Node 环境 TypeScript 配置
-│       ├── vite.config.ts             # Vite 构建工具配置
-│       ├── vite.config.js             # Vite 配置（备选）
-│       ├── vite.config.d.ts           # Vite 类型声明
-│       │
-│       ├── dist/                      # 构建输出目录（生产环境）
-│       │   ├── index.html             # 构建后的 HTML
-│       │   └── assets/                # 打包后的静态资源
-│       │
-│       └── src/                       # 源代码目录
-│           ├── App.tsx                # React 根组件
-│           ├── main.tsx               # React 入口文件
-│           ├── vite-env.d.ts          # Vite 类型声明
-│           ├── index.css              # 全局样式
-│           │
-│           ├── contexts/              # React Context 状态管理
-│           │   ├── AuthContext.tsx    # 认证状态管理（登录/登出）
-│           │   └── PromptContext.tsx # Prompt 数据状态管理
-│           │
-│           ├── lib/                   # 工具库
-│           │   └── supabase.ts       # Supabase 客户端配置
-│           │
-│           ├── pages/                 # 页面组件
-│           │   ├── DashboardPage.tsx # 仪表盘页面
-│           │   ├── LoginPage.tsx      # 登录页面
-│           │   ├── PromptDetailPage.tsx  # Prompt 详情页
-│           │   ├── PromptListPage.tsx    # Prompt 列表页
-│           │   └── SettingsPage.tsx   # 设置页面
-│           │
-│           └── types/                 # TypeScript 类型定义
-│               └── index.ts           # 共享类型定义
+│   ├── web/                           # Web 应用（主应用，desktop/mobile 复用）
+│   │   ├── .env / .env.example        # Supabase 环境变量
+│   │   ├── index.html
+│   │   ├── package.json
+│   │   ├── vite.config.ts
+│   │   ├── tailwind.config.js
+│   │   ├── postcss.config.js
+│   │   ├── tsconfig.json
+│   │   ├── dist/                      # 构建输出
+│   │   └── src/
+│   │       ├── main.tsx               # React 入口
+│   │       ├── App.tsx                # 根组件与路由
+│   │       ├── index.css
+│   │       ├── contexts/              # AuthContext / PromptContext
+│   │       ├── lib/supabase.ts        # Supabase 客户端
+│   │       ├── pages/                 # Dashboard / Login / PromptList / Detail / Settings
+│   │       └── types/index.ts
+│   │
+│   ├── desktop/                       # Tauri 2 桌面端（封装 web）
+│   │   ├── package.json
+│   │   └── src-tauri/
+│   │       ├── Cargo.toml
+│   │       ├── tauri.conf.json        # 指向 apps/web 构建产物
+│   │       ├── src/main.rs / lib.rs
+│   │       ├── capabilities/
+│   │       └── icons/
+│   │
+│   ├── mobile/                        # Capacitor 7 移动端（封装 web）
+│   │   ├── package.json
+│   │   ├── capacitor.config.ts        # webDir → ../web/dist
+│   │   └── android/                   # Android 原生工程
+│   │
+│   ├── extension/                     # Chrome 浏览器扩展（MV3）
+│   │   ├── README.md
+│   │   ├── manifest.json              # MV3 源文件（构建时拷贝到 dist）
+│   │   ├── package.json
+│   │   ├── vite.config.ts             # 多入口：popup / sidepanel / options / background / content
+│   │   ├── popup.html                 # 工具栏弹出页
+│   │   ├── sidepanel.html             # 侧边栏（主入口）
+│   │   ├── options.html               # 选项页
+│   │   ├── dist/                      # 构建输出，用于「加载未打包扩展」
+│   │   ├── note/                      # 扩展子文档（arch / dir / module）
+│   │   └── src/
+│   │       ├── main.tsx               # React 挂载入口
+│   │       ├── App.tsx                # 主 UI：列表 / 搜索 / 复制 / AI 优化 / 登录
+│   │       ├── background.ts          # Service Worker：同步 / 右键菜单 / 消息路由
+│   │       ├── content/contentScript.ts  # 网页内 Prompt 插入与 Toast
+│   │       ├── usePromptData.ts       # 本地 storage + Supabase 协调钩子
+│   │       ├── supabase.ts            # Supabase 客户端 + CRUD / sync / AI 优化
+│   │       ├── storage.ts             # chrome.storage.local 读写
+│   │       ├── syncService.ts         # 后台定时同步
+│   │       ├── contextMenus.ts        # 右键菜单（插入 Prompt / 保存选中文本）
+│   │       ├── messaging.ts           # 扩展内消息常量与类型
+│   │       ├── insertPrompt.ts        # 侧栏 → 当前标签页插入
+│   │       ├── tabInsert.ts           # background 侧标签页插入逻辑
+│   │       ├── promptClipService.ts   # 选中文本保存为 Prompt
+│   │       ├── runtime.ts             # VITE_* 运行时配置
+│   │       ├── store.ts               # Zustand 全局状态（可选）
+│   │       ├── types.ts               # Prompt / Category / AuthState 等
+│   │       ├── mockData.ts            # 首次空库种子数据
+│   │       ├── browser.ts             # 扩展环境探测
+│   │       ├── manifest.ts            # manifest 常量（TypeScript）
+│   │       └── extension.d.ts         # Chrome / Vite 类型声明
+│   │
+│   └── miniprogram/                   # 微信小程序
+│       ├── README.md
+│       ├── app.json                   # 全局配置与 tabBar
+│       ├── app.ts / app.wxss          # 小程序入口与全局样式
+│       ├── project.config.json        # 微信开发者工具项目配置
+│       ├── project.private.config.example.json
+│       ├── sitemap.json
+│       ├── tsconfig.json
+│       ├── package.json               # 仅 devDependencies（类型检查）
+│       ├── config/
+│       │   ├── config.example.ts      # Supabase 配置模板
+│       │   └── config.ts              # 实际配置（gitignore）
+│       ├── pages/
+│       │   ├── login/                 # 邮箱密码登录 / 注册
+│       │   ├── index/                 # 首页仪表盘
+│       │   ├── prompts/
+│       │   │   ├── list/              # Prompt 列表（搜索 / 筛选 / 批量操作）
+│       │   │   └── detail/            # 新建 / 编辑 / AI 优化
+│       │   └── categories/index/      # 分类管理（一级 / 二级）
+│       ├── utils/
+│       │   ├── supabase.ts            # REST API 封装（wx.request）
+│       │   ├── storage.ts             # 会话与复制历史（wx.storage）
+│       │   ├── helpers.ts             # 分类树 / 日期格式化 / 复制
+│       │   └── types.ts               # Prompt / Category / Session 等
+│       └── typings/index.d.ts         # 小程序全局类型
 │
 ├── packages/                          # 共享包目录
-│   └── shared/                        # 共享类型定义包
-│       ├── package.json              # 包配置
-│       ├── tsconfig.json              # TypeScript 配置
-│       └── src/
-│           └── index.ts               # 共享类型/工具导出
+│   └── shared/                        # 跨端共享类型定义
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── src/index.ts               # Prompt / Category / Variable 等
 │
 ├── supabase/                          # Supabase 后端配置
-│   └── schema.sql                     # 数据库 Schema（表结构定义）
+│   ├── schema.sql                     # 数据库 Schema（表结构 + RLS）
+│   └── functions/
+│       └── optimize-prompt/           # AI 优化 Edge Function
+│           ├── index.ts
+│           └── README.md
 │
-├── package.json                       # 根目录 package.json（monorepo 配置）
-├── pnpm-lock.yaml                     # pnpm 依赖锁定文件
-├── pnpm-workspace.yaml                # pnpm 工作区配置
-├── README.md                          # 项目说明文档
-└── .gitignore                         # Git 忽略文件配置
+├── note/                              # 项目级架构文档（本目录）
+│   ├── dir.md                         # 目录结构说明
+│   ├── arch.mmd                       # 架构图（Mermaid）
+│   └── module.mmd                     # 模块依赖图（Mermaid）
+│
+├── package.json                       # 根 monorepo 配置与脚本
+├── pnpm-workspace.yaml                # pnpm 工作区
+├── pnpm-lock.yaml
+├── README.md
+└── .gitignore
 ```
 
 ---
@@ -76,97 +133,134 @@ prompt-manager/
 
 | 文件 | 功能说明 |
 |------|----------|
-| `package.json` | **根配置**：定义 monorepo 工作区结构，包含 `apps/*` 和 `packages/*`，提供 `dev:web`、`build:web` 等脚本命令 |
-| `pnpm-workspace.yaml` | **pnpm 工作区配置**：声明工作区包含 `apps/*` 和 `packages/*` 目录 |
-| `pnpm-lock.yaml` | **依赖锁定文件**：锁定所有依赖的精确版本，确保团队成员安装相同版本 |
-| `README.md` | **项目说明文档**：包含技术栈、功能特性、快速开始指南、环境变量配置等 |
-| `.gitignore` | **Git 忽略配置**：忽略 `node_modules`、`dist`、`.env` 等不需要提交的文件 |
+| `package.json` | 定义 monorepo 工作区，提供 `dev:web`、`dev:desktop`、`dev:mobile`、`dev:extension`、`build:*`、`typecheck:miniprogram` 等脚本 |
+| `pnpm-workspace.yaml` | 声明工作区包含 `apps/*` 和 `packages/*` |
+| `README.md` | 项目说明、技术栈、快速开始、环境变量配置 |
 
-### Cursor IDE 配置
+### Web 应用 (`apps/web/`)
 
-| 文件 | 功能说明 |
+| 模块 | 功能说明 |
 |------|----------|
-| `.cursor/debug-68d062.log` | **调试日志**：记录 Cursor IDE 运行时的调试信息 |
-| `.cursor/plans/*.plan.md` | **开发计划文档**：记录 AI Prompt 管理器的详细开发计划 |
+| `contexts/AuthContext.tsx` | 用户认证状态（登录 / 登出 / Google OAuth） |
+| `contexts/PromptContext.tsx` | Prompt 增删改查、分类、搜索 |
+| `lib/supabase.ts` | Supabase JS Client 初始化 |
+| `pages/*` | Dashboard、Login、PromptList、PromptDetail、Settings |
 
-### Web 应用核心配置 (`apps/web/`)
+### 桌面端 (`apps/desktop/`)
 
-| 文件 | 功能说明 |
+| 模块 | 功能说明 |
 |------|----------|
-| `vite.config.ts` | **Vite 构建配置**：定义开发服务器端口、热更新、构建选项等 |
-| `tailwind.config.js` | **Tailwind CSS 配置**：定义主题颜色、断点、插件等 |
-| `postcss.config.js` | **PostCSS 配置**：配置 CSS 预处理器的插件（如 autoprefixer） |
-| `tsconfig.json` | **TypeScript 配置**：定义编译选项、路径别名、严格模式等 |
-| `.env` / `.env.example` | **环境变量**：存储 Supabase URL 和 Anon Key 等敏感配置 |
+| `src-tauri/tauri.conf.json` | 开发时加载 `localhost:5173`，生产时使用 `apps/web/dist` |
+| `src-tauri/src/` | Rust 后端入口，WebView 壳层 |
 
-### Web 应用源码 (`apps/web/src/`)
+### 移动端 (`apps/mobile/`)
 
-| 文件 | 功能说明 |
+| 模块 | 功能说明 |
 |------|----------|
-| `main.tsx` | **入口文件**：渲染 React 应用到 DOM |
-| `App.tsx` | **根组件**：定义应用的整体布局和路由结构 |
-| `index.css` | **全局样式**：定义 CSS 变量、全局重置样式等 |
-| `contexts/AuthContext.tsx` | **认证上下文**：管理用户登录状态、用户信息，提供 `login()`、`logout()` 方法 |
-| `contexts/PromptContext.tsx` | **Prompt 上下文**：管理 Prompt 的增删改查、分类、标签等状态 |
-| `lib/supabase.ts` | **Supabase 客户端**：初始化并导出 Supabase 客户端实例 |
-| `pages/DashboardPage.tsx` | **仪表盘页面**：展示统计数据、最近使用的 Prompt 等概览信息 |
-| `pages/LoginPage.tsx` | **登录页面**：提供用户登录/注册功能 |
-| `pages/PromptListPage.tsx` | **Prompt 列表页**：展示所有 Prompt，支持搜索、分类筛选、标签过滤 |
-| `pages/PromptDetailPage.tsx` | **Prompt 详情页**：查看单个 Prompt 的完整内容，支持编辑 |
-| `pages/SettingsPage.tsx` | **设置页面**：管理分类、标签、账户设置等 |
-| `types/index.ts` | **类型定义**：定义 `Prompt`、`Category`、`Tag` 等数据结构 |
+| `capacitor.config.ts` | `webDir` 指向 `../web/dist`，复用 Web 构建产物 |
+| `android/` | Capacitor 生成的 Android 原生工程 |
+
+### 浏览器扩展 (`apps/extension/`)
+
+| 模块 | 功能说明 |
+|------|----------|
+| `manifest.json` | MV3 权限：storage、sidePanel、clipboardWrite、identity、contextMenus、scripting 等 |
+| `src/App.tsx` | 侧栏主界面：Prompt 列表、搜索筛选、复制、AI 优化、Supabase 登录 |
+| `src/background.ts` | Service Worker：定时同步、右键菜单、消息路由、标签页插入 |
+| `src/content/contentScript.ts` | 注入网页：在 ChatGPT 等输入框插入 Prompt、显示 Toast |
+| `src/usePromptData.ts` | 聚合 chrome.storage、mock 数据与 Supabase 远程数据 |
+| `src/supabase.ts` | Supabase 客户端、远程 CRUD/sync、调用 `optimize-prompt` |
+| `src/storage.ts` | `chrome.storage.local` 持久化 prompts / categories / auth |
+| `src/syncService.ts` | 后台从 Supabase 拉取并写入本地 storage |
+| `src/contextMenus.ts` | 右键菜单：插入 Prompt 到页面、保存选中文本 |
+| `src/messaging.ts` | background ↔ content ↔ sidepanel 消息协议 |
+| `src/insertPrompt.ts` | 侧栏 UI 触发向当前标签页插入 Prompt |
+| `src/tabInsert.ts` | background 执行 scripting 注入 content script |
+| `src/promptClipService.ts` | 将页面选中文本保存为新 Prompt |
+| `src/runtime.ts` | 读取 `VITE_SUPABASE_URL` 等环境变量 |
+
+扩展详细目录见 `apps/extension/note/dir.md`。
+
+### 微信小程序 (`apps/miniprogram/`)
+
+| 模块 | 功能说明 |
+|------|----------|
+| `app.json` | 页面路由、tabBar（首页 / Prompt / 分类）、导航栏样式 |
+| `app.ts` | 全局 App 实例，启动时恢复会话，`checkAuth()` 守卫 |
+| `config/config.ts` | Supabase URL / Anon Key / Function URL |
+| `pages/login/` | 邮箱密码登录与注册（不支持 Google OAuth） |
+| `pages/index/` | 仪表盘：统计、最近 Prompt、复制历史 |
+| `pages/prompts/list/` | 列表、搜索筛选、批量删除、一键复制 |
+| `pages/prompts/detail/` | 新建 / 编辑 Prompt、AI 优化 |
+| `pages/categories/index/` | 一级 / 二级分类 CRUD |
+| `utils/supabase.ts` | 基于 `wx.request` 的 Supabase REST / Auth / Edge Function 封装 |
+| `utils/storage.ts` | 本地会话（`wx.setStorageSync`）与复制历史 |
+| `utils/helpers.ts` | 分类树构建、日期格式化、剪贴板复制 |
+| `utils/types.ts` | 小程序端类型定义（与 shared 结构对齐） |
 
 ### 共享包 (`packages/shared/`)
 
 | 文件 | 功能说明 |
 |------|----------|
-| `src/index.ts` | **导出入口**：导出所有共享类型和工具函数，供 `apps/*` 调用 |
+| `src/index.ts` | 导出 `Prompt`、`Category`、`Variable`、`User` 及 Create/Update 输入类型 |
 
-### 数据库 Schema (`supabase/`)
+### 后端 (`supabase/`)
 
 | 文件 | 功能说明 |
 |------|----------|
-| `schema.sql` | **数据库表结构**：定义 `profiles`、`prompts`、`categories`、`tags` 等数据表的 SQL 脚本 |
+| `schema.sql` | `profiles`、`categories`、`prompts` 等表结构与 RLS 策略 |
+| `functions/optimize-prompt/index.ts` | Edge Function：调用 DeepSeek 等 API 优化 Prompt 内容 |
 
 ---
 
 ## 技术架构概览
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     前端（React 18）                      │
-├─────────────────────────────────────────────────────────┤
-│  apps/web (Web 应用)                                      │
-│  ├── pages/          页面组件（Dashboard, Login, List...）│
-│  ├── contexts/       状态管理（Auth, Prompt）              │
-│  ├── lib/            工具库（Supabase 客户端）            │
-│  └── types/          TypeScript 类型定义                  │
-├─────────────────────────────────────────────────────────┤
-│  packages/shared    共享类型定义（跨应用复用）             │
-└─────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────┐
-│                    云端（Supabase）                       │
-│  ├── 认证服务（Auth）                                     │
-│  └── PostgreSQL 数据库                                    │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                           客户端（多端）                               │
+├──────────────┬──────────────┬──────────────┬──────────────────────────┤
+│  apps/web    │ apps/desktop │ apps/mobile  │ apps/extension           │
+│  React 18    │ Tauri 2      │ Capacitor 7  │ Chrome MV3 + React       │
+│  Vite        │ 封装 web     │ 封装 web     │ 侧栏 / 右键 / 页面插入    │
+├──────────────┴──────────────┴──────────────┴──────────────────────────┤
+│  apps/miniprogram                                                     │
+│  微信小程序原生框架 + TypeScript + wx.request 调用 Supabase REST       │
+├──────────────────────────────────────────────────────────────────────┤
+│  packages/shared    共享类型定义（web 可直接引用；extension/miniprogram 各自维护对齐副本）│
+└──────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌──────────────────────────────────────────────────────────────────────┐
+│                         云端（Supabase）                              │
+│  ├── Auth（邮箱密码 / Google OAuth）                                  │
+│  ├── PostgreSQL（profiles / categories / prompts）                   │
+│  └── Edge Functions（optimize-prompt）                               │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 依赖说明
+## 脚本命令
 
-### 主要生产依赖
+| 命令 | 说明 |
+|------|------|
+| `pnpm dev:web` | 启动 Web 开发服务器 |
+| `pnpm build:web` | 构建 Web 生产包 |
+| `pnpm dev:desktop` | 启动 Tauri 桌面开发（联动 web dev） |
+| `pnpm build:desktop` | 构建桌面安装包 |
+| `pnpm dev:mobile` | 移动端开发 |
+| `pnpm build:mobile` | 构建 Web 并同步到 Android |
+| `pnpm dev:extension` | 扩展 Vite 开发构建 |
+| `pnpm build:extension` | 扩展生产构建 → `apps/extension/dist` |
+| `pnpm typecheck:miniprogram` | 小程序 TypeScript 类型检查 |
 
-- **React 18.3.1** - UI 框架
-- **React Router DOM 6.26** - 路由管理
-- **Supabase JS Client 2.45** - 后端数据库交互
-- **Zustand 4.5** - 状态管理（虽然代码中用了 Context）
-- **Tailwind CSS 3.4** - 原子化 CSS 样式框架
-- **Lucide React 0.428** - 图标库
+---
 
-### 开发依赖
+## 环境变量与配置
 
-- **TypeScript 5.5** - 类型检查
-- **Vite 5.4** - 构建工具
-- **PostCSS / Autoprefixer** - CSS 处理
+| 端 | 配置位置 | 关键变量 |
+|----|----------|----------|
+| Web / Desktop / Mobile | `apps/web/.env` | `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY` |
+| Extension | `apps/extension/.env` | `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`、`VITE_SUPABASE_FUNCTION_URL`（可选） |
+| Miniprogram | `apps/miniprogram/config/config.ts` | `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_FUNCTION_URL` |
+
+微信小程序还需在微信公众平台配置 Supabase 域名为 request 合法域名。
