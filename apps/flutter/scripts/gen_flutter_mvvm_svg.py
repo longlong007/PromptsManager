@@ -1,0 +1,321 @@
+"""apps/flutter/scripts/gen_flutter_mvvm_svg.py — MVVM + Repository 架构 SVG 生成器."""
+from pathlib import Path
+
+SVG = """<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1020"
+     font-family="-apple-system, 'PingFang SC', 'Microsoft YaHei', Helvetica, sans-serif">
+  <defs>
+    <style><![CDATA[
+      .title       { font-size: 22px; font-weight: 700; fill: #0f172a; }
+      .subtitle    { font-size: 13px; fill: #475569; }
+      .layer-label { font-size: 13px; font-weight: 700; fill: #475569; letter-spacing: 1px; }
+      .layer-dir   { font-size: 10px; fill: #64748b; font-family: Consolas, 'Courier New', monospace; }
+      .module-name { font-size: 13px; font-weight: 700; fill: #0f172a; }
+      .module-en   { font-size: 9.5px; fill: #64748b; font-family: Consolas, 'Courier New', monospace; }
+      .module-desc { font-size: 11px; fill: #334155; }
+      .badge       { font-size: 10px; font-weight: 700; fill: #ffffff; }
+      .infra-name  { font-size: 13px; font-weight: 700; fill: #0f172a; }
+      .infra-en    { font-size: 9.5px; fill: #64748b; font-family: Consolas, 'Courier New', monospace; }
+      .infra-desc  { font-size: 11px; fill: #475569; }
+      .arrow-label { font-size: 10.5px; fill: #64748b; font-style: italic; }
+      .ext-name    { font-size: 12px; font-weight: 700; fill: #44403c; }
+      .ext-en      { font-size: 9.5px; fill: #78716c; font-family: Consolas, 'Courier New', monospace; }
+      .ext-desc    { font-size: 10.5px; fill: #57534e; }
+      .legend      { font-size: 11px; fill: #475569; }
+      .flow-note   { font-size: 11px; fill: #64748b; }
+    ]]></style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrow-up" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3b82f6"/>
+    </marker>
+    <marker id="arrow-ext" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrow-dash" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect width="1500" height="1020" fill="#ffffff"/>
+
+  <!-- 标题 -->
+  <text x="750" y="38" text-anchor="middle" class="title">Prompt Manager Flutter · MVVM + Repository 架构图</text>
+  <text x="750" y="60" text-anchor="middle" class="subtitle">Provider 驱动 · 目录与文件一一对应 · View 不直接访问数据源</text>
+
+  <!-- MVVM 角色图例 -->
+  <rect x="200" y="72" width="1100" height="28" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="750" y="91" text-anchor="middle" class="legend">MVVM 映射：screens = View · providers = ViewModel · services = Repository · models = Model</text>
+
+  <!-- ═══════════ 左侧：启动与模型 ═══════════ -->
+  <rect x="20" y="112" width="160" height="860" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="100" y="140" text-anchor="middle" class="layer-label">启动与模型</text>
+
+  <!-- Bootstrap -->
+  <rect x="32" y="158" width="136" height="130" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="44" y="178" class="infra-name">应用启动</text>
+  <text x="44" y="192" class="infra-en">lib main.dart</text>
+  <text x="44" y="210" class="infra-desc">加载环境变量</text>
+  <text x="44" y="226" class="infra-desc">初始化 Supabase</text>
+  <text x="44" y="242" class="infra-desc">MultiProvider 注入</text>
+  <text x="44" y="258" class="infra-desc">runApp 启动</text>
+  <text x="44" y="274" class="infra-en">lib app.dart</text>
+
+  <rect x="32" y="302" width="136" height="108" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="44" y="322" class="infra-name">路由与主题</text>
+  <text x="44" y="336" class="infra-en">app.dart createRouter()</text>
+  <text x="44" y="354" class="infra-desc">GoRouter 声明路由</text>
+  <text x="44" y="370" class="infra-desc">登录守卫 redirect</text>
+  <text x="44" y="386" class="infra-desc">MaterialApp 主题</text>
+  <text x="44" y="402" class="infra-en">lib config app_config.dart</text>
+
+  <!-- Model layer badge -->
+  <rect x="32" y="430" width="136" height="22" rx="4" fill="#fce7f3" stroke="#ec4899" stroke-width="1"/>
+  <text x="100" y="445" text-anchor="middle" class="badge" fill="#9d174d">④ Model 层</text>
+
+  <rect x="32" y="462" width="136" height="96" rx="8" fill="#ffffff" stroke="#ec4899" stroke-width="1"/>
+  <text x="44" y="482" class="infra-name">提示词实体</text>
+  <text x="44" y="496" class="infra-en">lib models prompt.dart</text>
+  <text x="44" y="514" class="infra-desc">fromJson 解析</text>
+  <text x="44" y="530" class="infra-desc">toInsertJson 写入</text>
+  <text x="44" y="546" class="infra-desc">tags variables 字段</text>
+
+  <rect x="32" y="572" width="136" height="88" rx="8" fill="#ffffff" stroke="#ec4899" stroke-width="1"/>
+  <text x="44" y="592" class="infra-name">分类实体</text>
+  <text x="44" y="606" class="infra-en">lib models category.dart</text>
+  <text x="44" y="624" class="infra-desc">parentId 二级分类</text>
+  <text x="44" y="640" class="infra-desc">copyWith 局部更新</text>
+  <text x="44" y="656" class="infra-desc">sortOrder 排序</text>
+
+  <rect x="32" y="674" width="136" height="80" rx="8" fill="#ffffff" stroke="#ec4899" stroke-width="1"/>
+  <text x="44" y="694" class="infra-name">变量占位符</text>
+  <text x="44" y="708" class="infra-en">lib models variable.dart</text>
+  <text x="44" y="726" class="infra-desc">name description</text>
+  <text x="44" y="742" class="infra-desc">defaultValue 默认值</text>
+
+  <rect x="32" y="770" width="136" height="72" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1"/>
+  <text x="44" y="790" class="infra-desc">Model 纯数据结构</text>
+  <text x="44" y="806" class="infra-desc">无业务依赖</text>
+  <text x="44" y="822" class="infra-desc">被 Repository 引用</text>
+  <text x="44" y="838" class="infra-desc">被 ViewModel 持有</text>
+
+  <!-- ═══════════ 主脊柱 ═══════════ -->
+  <g transform="translate(160, 0)">
+
+    <!-- ① View 层 -->
+    <rect x="40" y="112" width="1100" height="178" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="60" y="140" class="layer-label">① View 层</text>
+    <text x="155" y="140" class="layer-dir">lib screens · StatefulWidget · 仅负责 UI 与用户交互</text>
+
+    <rect x="60" y="154" width="196" height="118" rx="8" fill="#ffffff" stroke="#3b82f6" stroke-width="1"/>
+    <text x="72" y="172" class="module-name">登录注册页</text>
+    <text x="72" y="186" class="module-en">login_screen.dart</text>
+    <text x="72" y="204" class="module-desc">邮箱密码表单</text>
+    <text x="72" y="220" class="module-desc">调用 AuthProvider</text>
+    <text x="72" y="236" class="module-desc">路由 · login</text>
+    <text x="72" y="252" class="module-en">Consumer Provider</text>
+
+    <rect x="272" y="154" width="196" height="118" rx="8" fill="#ffffff" stroke="#3b82f6" stroke-width="1"/>
+    <text x="284" y="172" class="module-name">首页仪表盘</text>
+    <text x="284" y="186" class="module-en">dashboard_screen.dart</text>
+    <text x="284" y="204" class="module-desc">统计卡片展示</text>
+    <text x="284" y="220" class="module-desc">最近提示词预览</text>
+    <text x="284" y="236" class="module-desc">路由 · 根路径</text>
+    <text x="284" y="252" class="module-en">Auth + PromptProvider</text>
+
+    <rect x="484" y="154" width="196" height="118" rx="8" fill="#ffffff" stroke="#3b82f6" stroke-width="1"/>
+    <text x="496" y="172" class="module-name">提示词列表</text>
+    <text x="496" y="186" class="module-en">prompt_list_screen.dart</text>
+    <text x="496" y="204" class="module-desc">搜索与分类筛选</text>
+    <text x="496" y="220" class="module-desc">多选批量操作</text>
+    <text x="496" y="236" class="module-desc">路由 · prompts</text>
+    <text x="496" y="252" class="module-en">直接调 CopyHistory</text>
+
+    <rect x="696" y="154" width="196" height="118" rx="8" fill="#ffffff" stroke="#3b82f6" stroke-width="1"/>
+    <text x="708" y="172" class="module-name">提示词详情</text>
+    <text x="708" y="186" class="module-en">prompt_detail_screen.dart</text>
+    <text x="708" y="204" class="module-desc">新建与编辑表单</text>
+    <text x="708" y="220" class="module-desc">AI 优化按钮</text>
+    <text x="708" y="236" class="module-desc">路由 · prompts id</text>
+    <text x="708" y="252" class="module-en">PromptProvider + AiService</text>
+
+    <rect x="908" y="154" width="196" height="118" rx="8" fill="#ffffff" stroke="#3b82f6" stroke-width="1"/>
+    <text x="920" y="172" class="module-name">分类管理页</text>
+    <text x="920" y="186" class="module-en">categories_screen.dart</text>
+    <text x="920" y="204" class="module-desc">分类 CRUD 对话框</text>
+    <text x="920" y="220" class="module-desc">拖拽排序</text>
+    <text x="920" y="236" class="module-desc">路由 · categories</text>
+    <text x="920" y="252" class="module-en">PromptProvider</text>
+
+    <!-- 双向箭头 View ↔ ViewModel -->
+    <line x1="590" y1="290" x2="590" y2="318" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <line x1="600" y1="318" x2="600" y2="290" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-up)"/>
+    <text x="618" y="308" class="arrow-label">用户操作 ↓</text>
+    <text x="618" y="322" class="arrow-label">notifyListeners ↑</text>
+
+    <!-- ② ViewModel 层 -->
+    <rect x="40" y="324" width="1100" height="168" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="60" y="352" class="layer-label">② ViewModel 层</text>
+    <text x="195" y="352" class="layer-dir">lib providers · ChangeNotifier · 状态持有与业务编排</text>
+
+    <rect x="120" y="366" width="400" height="110" rx="8" fill="#ffffff" stroke="#f59e0b" stroke-width="1"/>
+    <text x="132" y="384" class="module-name">认证 ViewModel</text>
+    <text x="132" y="398" class="module-en">auth_provider.dart · AuthProvider</text>
+    <text x="132" y="416" class="module-desc">isAuthenticated 登录态</text>
+    <text x="132" y="432" class="module-desc">signIn · signUp · signOut</text>
+    <text x="132" y="448" class="module-desc">onAuthStateChange 监听</text>
+    <text x="132" y="464" class="module-desc">供 GoRouter refreshListenable</text>
+
+    <rect x="560" y="366" width="520" height="110" rx="8" fill="#ffffff" stroke="#f59e0b" stroke-width="1"/>
+    <text x="572" y="384" class="module-name">业务 ViewModel</text>
+    <text x="572" y="398" class="module-en">prompt_provider.dart · PromptProvider</text>
+    <text x="572" y="416" class="module-desc">持有 List Prompt · List Category · loading · error</text>
+    <text x="572" y="432" class="module-desc">loadAll · search · create · update · delete</text>
+    <text x="572" y="448" class="module-desc">incrementUsage · 分类 CRUD · reorderCategories</text>
+    <text x="572" y="464" class="module-desc">封装 PromptRepository · 不直接调 Supabase</text>
+
+    <!-- 箭头 ViewModel → Repository -->
+    <line x1="590" y1="492" x2="590" y2="526" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="600" y="516" class="arrow-label">调用仓储方法</text>
+
+    <!-- ③ Repository 层 -->
+    <rect x="40" y="528" width="1100" height="178" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+    <text x="60" y="556" class="layer-label">③ Repository 层</text>
+    <text x="195" y="556" class="layer-dir">lib services · 数据访问抽象 · 屏蔽 Supabase 与本地存储细节</text>
+
+    <rect x="60" y="570" width="320" height="118" rx="8" fill="#ffffff" stroke="#10b981" stroke-width="1"/>
+    <text x="72" y="588" class="module-name">数据仓储</text>
+    <text x="72" y="602" class="module-en">prompt_repository.dart · PromptRepository</text>
+    <text x="72" y="620" class="module-desc">fetchPrompts · searchPrompts</text>
+    <text x="72" y="636" class="module-desc">create · update · delete Prompt</text>
+    <text x="72" y="652" class="module-desc">fetchCategories · 分类 CRUD · reorder</text>
+    <text x="72" y="668" class="module-desc">返回 Model 对象 · 按 user_id 过滤</text>
+
+    <rect x="400" y="570" width="280" height="118" rx="8" fill="#ffffff" stroke="#10b981" stroke-width="1"/>
+    <text x="412" y="588" class="module-name">AI 服务</text>
+    <text x="412" y="602" class="module-en">ai_service.dart · AiService</text>
+    <text x="412" y="620" class="module-desc">optimizePrompt 提交内容</text>
+    <text x="412" y="636" class="module-desc">调用 Edge Function</text>
+    <text x="412" y="652" class="module-desc">返回优化后文本</text>
+    <text x="412" y="668" class="module-desc">DetailScreen 可直接调用</text>
+
+    <rect x="700" y="570" width="400" height="118" rx="8" fill="#ffffff" stroke="#10b981" stroke-width="1"/>
+    <text x="712" y="588" class="module-name">本地历史服务</text>
+    <text x="712" y="602" class="module-en">copy_history_service.dart · CopyHistoryService</text>
+    <text x="712" y="620" class="module-desc">addEntry · getEntries 复制记录</text>
+    <text x="712" y="636" class="module-desc">SharedPreferences JSON 序列化</text>
+    <text x="712" y="652" class="module-desc">最多保留 50 条</text>
+    <text x="712" y="668" class="module-desc">ListScreen 直接调用（不经 ViewModel）</text>
+
+    <!-- 虚线：View 直接调 CopyHistory -->
+    <line x1="580" y1="272" x2="900" y2="570" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="6,4" marker-end="url(#arrow-dash)"/>
+    <text x="720" y="420" class="arrow-label">本地操作例外</text>
+
+    <!-- 虚线：Model ← Repository -->
+    <line x1="40" y1="620" x2="-88" y2="520" stroke="#ec4899" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arrow-dash)"/>
+    <text x="10" y="600" class="arrow-label">引用 Model</text>
+
+    <!-- 箭头 Repository → Data Source -->
+    <line x1="590" y1="706" x2="590" y2="742" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="600" y="732" class="arrow-label">读写持久化</text>
+
+    <!-- ④ Data Source 层 -->
+    <rect x="40" y="744" width="1100" height="148" rx="10" fill="#fdf2f8" stroke="#ec4899" stroke-width="1.5"/>
+    <text x="60" y="772" class="layer-label">⑤ Data Source 层</text>
+    <text x="210" y="772" class="layer-dir">外部 SDK 与存储 · Repository 的唯一出口</text>
+
+    <rect x="80" y="786" width="240" height="90" rx="8" fill="#ffffff" stroke="#ec4899" stroke-width="1"/>
+    <text x="92" y="804" class="module-name">云端认证</text>
+    <text x="92" y="818" class="module-en">supabase_flutter · Auth API</text>
+    <text x="92" y="836" class="module-desc">邮箱密码鉴权</text>
+    <text x="92" y="852" class="module-desc">Session 令牌管理</text>
+    <text x="92" y="868" class="module-desc">AuthProvider 直连</text>
+
+    <rect x="340" y="786" width="260" height="90" rx="8" fill="#ffffff" stroke="#ec4899" stroke-width="1"/>
+    <text x="352" y="804" class="module-name">关系型数据库</text>
+    <text x="352" y="818" class="module-en">Supabase · PostgreSQL · RLS</text>
+    <text x="352" y="836" class="module-desc">prompts 表 · categories 表</text>
+    <text x="352" y="852" class="module-desc">行级安全按 user_id 隔离</text>
+    <text x="352" y="868" class="module-desc">PromptRepository 读写</text>
+
+    <rect x="620" y="786" width="240" height="90" rx="8" fill="#ffffff" stroke="#ec4899" stroke-width="1"/>
+    <text x="632" y="804" class="module-name">边缘函数</text>
+    <text x="632" y="818" class="module-en">optimize-prompt · Edge Function</text>
+    <text x="632" y="836" class="module-desc">服务端 AI 优化</text>
+    <text x="632" y="852" class="module-desc">DeepSeek 模型处理</text>
+    <text x="632" y="868" class="module-desc">AiService 调用</text>
+
+    <rect x="880" y="786" width="220" height="90" rx="8" fill="#ffffff" stroke="#ec4899" stroke-width="1"/>
+    <text x="892" y="804" class="module-name">设备本地存储</text>
+    <text x="892" y="818" class="module-en">shared_preferences</text>
+    <text x="892" y="836" class="module-desc">复制历史 JSON</text>
+    <text x="892" y="852" class="module-desc">离线可查看</text>
+    <text x="892" y="868" class="module-desc">CopyHistoryService 读写</text>
+
+    <!-- 数据流说明条 -->
+    <rect x="120" y="906" width="940" height="36" rx="8" fill="#f0f9ff" stroke="#3b82f6" stroke-width="1"/>
+    <text x="590" y="928" text-anchor="middle" class="flow-note">数据流：Screen 触发操作 → Provider 更新状态 → Repository 访问数据源 → 返回 Model → notifyListeners 刷新 UI</text>
+
+  </g>
+
+  <!-- ═══════════ 右侧：依赖关系 ═══════════ -->
+  <rect x="1320" y="112" width="160" height="860" rx="10" fill="#fafaf9" stroke="#a8a29e" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <text x="1400" y="140" text-anchor="middle" class="layer-label">依赖方向</text>
+
+  <rect x="1332" y="168" width="136" height="108" rx="8" fill="#ffffff" stroke="#a8a29e" stroke-width="1"/>
+  <text x="1344" y="188" class="ext-name">自上而下</text>
+  <text x="1344" y="206" class="ext-desc">main.dart</text>
+  <text x="1344" y="222" class="ext-desc">  ↓ app.dart</text>
+  <text x="1344" y="238" class="ext-desc">  ↓ screens</text>
+  <text x="1344" y="254" class="ext-desc">  ↓ providers</text>
+  <text x="1344" y="270" class="ext-desc">  ↓ services → models</text>
+
+  <rect x="1332" y="296" width="136" height="120" rx="8" fill="#ffffff" stroke="#a8a29e" stroke-width="1"/>
+  <text x="1344" y="316" class="ext-name">Provider 注入</text>
+  <text x="1344" y="330" class="ext-en">MultiProvider</text>
+  <text x="1344" y="348" class="ext-desc">AuthProvider 全局单例</text>
+  <text x="1344" y="364" class="ext-desc">PromptProvider 懒创建</text>
+  <text x="1344" y="380" class="ext-desc">context.read watch</text>
+  <text x="1344" y="396" class="ext-desc">Consumer 局部刷新</text>
+  <text x="1344" y="412" class="ext-desc">ChangeNotifierProvider</text>
+
+  <rect x="1332" y="436" width="136" height="108" rx="8" fill="#ffffff" stroke="#a8a29e" stroke-width="1"/>
+  <text x="1344" y="456" class="ext-name">路由守卫</text>
+  <text x="1344" y="470" class="ext-en">go_router</text>
+  <text x="1344" y="488" class="ext-desc">未登录 → login</text>
+  <text x="1344" y="504" class="ext-desc">已登录 → 首页</text>
+  <text x="1344" y="520" class="ext-desc">refreshListenable</text>
+  <text x="1344" y="536" class="ext-desc">AuthProvider 驱动</text>
+
+  <rect x="1332" y="564" width="136" height="120" rx="8" fill="#ffffff" stroke="#a8a29e" stroke-width="1"/>
+  <text x="1344" y="584" class="ext-name">与 Web 端对齐</text>
+  <text x="1344" y="602" class="ext-desc">同一 Supabase 后端</text>
+  <text x="1344" y="618" class="ext-desc">同一账号数据同步</text>
+  <text x="1344" y="634" class="ext-desc">Flutter 独立维护</text>
+  <text x="1344" y="650" class="ext-desc">lib models 类型</text>
+  <text x="1344" y="666" class="ext-desc">不依赖 shared 包</text>
+  <text x="1344" y="682" class="ext-desc">Provider ≈ Context</text>
+
+  <rect x="1332" y="704" width="136" height="96" rx="8" fill="#ffffff" stroke="#a8a29e" stroke-width="1"/>
+  <text x="1344" y="724" class="ext-name">环境配置</text>
+  <text x="1344" y="738" class="ext-en">flutter_dotenv · .env</text>
+  <text x="1344" y="756" class="ext-desc">SUPABASE_URL</text>
+  <text x="1344" y="772" class="ext-desc">SUPABASE_ANON_KEY</text>
+  <text x="1344" y="788" class="ext-desc">AppConfig 读取校验</text>
+
+  <!-- 外部连线 -->
+  <line x1="1260" y1="830" x2="1332" y2="220" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arrow-ext)"/>
+  <line x1="1260" y1="850" x2="1332" y2="620" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arrow-ext)"/>
+
+  <!-- 底部脚注 -->
+  <text x="750" y="998" text-anchor="middle" class="flow-note">生成脚本：scripts gen_flutter_mvvm_svg.py · 输出：docs flutter_mvvm.svg</text>
+
+</svg>
+"""
+
+if __name__ == "__main__":
+    out = Path(__file__).resolve().parent.parent / "docs" / "flutter_mvvm.svg"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(SVG, encoding="utf-8")
+    print(f"wrote {out} ({out.stat().st_size} bytes)")

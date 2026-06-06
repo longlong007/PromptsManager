@@ -31,15 +31,30 @@ graph TD
         M_Config[config_config.ts]
     end
 
+    subgraph Flutter[apps_flutter]
+        F_main[main.dart]
+        F_App[app.dart]
+        F_Auth[AuthProvider]
+        F_Prompt[PromptProvider]
+        F_Repo[PromptRepository]
+        F_AI[AiService]
+        F_Copy[CopyHistoryService]
+        F_Screens[screens]
+    end
+
     subgraph Shared[packages_shared]
         S_types[src_index.ts]
     end
 
     subgraph External[外部依赖]
         SB_JS[supabase_js]
+        SB_FL[supabase_flutter]
         React[react]
         Chrome[chrome_API]
         WX[wx_API]
+        Provider[provider]
+        GoRouter[go_router]
+        Prefs[shared_preferences]
     end
 
     W_main --> W_App --> W_Auth & W_Prompt --> W_SB --> SB_JS
@@ -59,6 +74,16 @@ graph TD
     M_SB --> M_Config & M_Storage
     M_SB --> WX
     M_Storage --> WX
+
+    F_main --> F_App --> F_Auth & F_Prompt
+    F_App --> F_Screens
+    F_Screens --> F_Auth & F_Prompt
+    F_Auth --> SB_FL
+    F_Prompt --> F_Repo --> SB_FL
+    F_Prompt --> F_AI --> SB_FL
+    F_Screens --> F_Copy --> Prefs
+    F_main --> Provider
+    F_App --> GoRouter
 ```
 
 ---
@@ -180,7 +205,57 @@ graph TD
 
 ---
 
-## 5. 共享类型与各端对齐
+## 5. Flutter 模块依赖
+
+```mermaid
+graph TD
+    mainF[main.dart] --> AppF[app.dart]
+    mainF --> AuthP[AuthProvider]
+    mainF --> PromptP[PromptProvider]
+    AppF --> Router[GoRouter]
+
+    AuthP --> SBFL[supabase_flutter]
+    PromptP --> Repo[PromptRepository]
+    PromptP --> Repo
+    Repo --> SBFL
+
+    subgraph ScreensF[screens]
+        LoginF[login_screen]
+        DashF[dashboard_screen]
+        ListF[prompt_list_screen]
+        DetailF[prompt_detail_screen]
+        CatF[categories_screen]
+    end
+
+    AppF --> ScreensF
+    LoginF --> AuthP
+    DashF --> AuthP & PromptP
+    ListF --> PromptP
+    DetailF --> PromptP
+    DetailF --> AI[AiService]
+    CatF --> PromptP
+    ListF --> Copy[CopyHistoryService]
+    DetailF --> Copy
+
+    AI --> SBFL
+    Copy --> Prefs[shared_preferences]
+
+    subgraph ModelsF[models]
+        PromptM[prompt.dart]
+        CatM[category.dart]
+        VarM[variable.dart]
+    end
+
+    Repo --> PromptM & CatM
+    PromptM --> VarM
+
+    Config[app_config.dart] --> Dotenv[flutter_dotenv]
+    mainF --> Config
+```
+
+---
+
+## 6. 共享类型与各端对齐
 
 ```mermaid
 classDiagram
@@ -216,17 +291,19 @@ classDiagram
     class WebTypes
     class ExtTypes
     class MpTypes
+    class FlutterTypes
 
     SharedTypes ..> Prompt
     SharedTypes ..> Category
     WebTypes ..> Prompt
     ExtTypes ..> Prompt
     MpTypes ..> Prompt
+    FlutterTypes ..> Prompt
 ```
 
 ---
 
-## 6. Supabase 数据操作依赖
+## 7. Supabase 数据操作依赖
 
 ```mermaid
 flowchart TD
@@ -247,6 +324,12 @@ flowchart TD
         MFn[functions_v1]
     end
 
+    subgraph FlutterOps[Flutter_supabase_flutter]
+        FAuth[client.auth]
+        FDB[client.from]
+        FFn[functions.invoke]
+    end
+
     subgraph Tables[数据表]
         Profiles[profiles]
         Categories[categories]
@@ -265,11 +348,14 @@ flowchart TD
     MAuth --> Profiles
     MDB --> Categories & Prompts
     MFn --> Optimize
+    FAuth --> Profiles
+    FDB --> Categories & Prompts
+    FFn --> Optimize
 ```
 
 ---
 
-## 7. 模块层次结构（按端）
+## 8. 模块层次结构（按端）
 
 ```mermaid
 graph TB
@@ -300,11 +386,21 @@ graph TB
         M5[L5_wx_API]
         M1 --> M2 --> M3 --> M4 --> M5
     end
+
+    subgraph FlutterLayers[Flutter]
+        FL1[L1_main.dart]
+        FL2[L2_app.dart_GoRouter]
+        FL3[L3_Provider]
+        FL4[L4_screens]
+        FL5[L5_services]
+        FL6[L6_supabase_flutter]
+        FL1 --> FL2 --> FL3 --> FL4 --> FL5 --> FL6
+    end
 ```
 
 ---
 
-## 8. 依赖层级表格
+## 9. 依赖层级表格
 
 ### Web 应用
 
@@ -336,3 +432,15 @@ graph TB
 | 2 | pages | supabase_storage_helpers_types | 各业务页面 |
 | 3 | utils_supabase | config_storage_types | REST_API_封装 |
 | 4 | config_config.ts | 无 | Supabase_连接配置 |
+
+### Flutter 应用
+
+| 层级 | 模块 | 依赖 | 说明 |
+|------|------|------|------|
+| 1 | main.dart | app.dart, Provider, Supabase | 应用入口、环境初始化 |
+| 2 | app.dart | GoRouter, screens | 路由守卫与 MaterialApp 主题 |
+| 3 | AuthProvider / PromptProvider | services, supabase_flutter | 业务状态管理 |
+| 4 | screens | Provider | 页面 UI 与用户交互 |
+| 5 | PromptRepository / AiService | supabase_flutter | 数据访问与 Edge Function |
+| 5 | CopyHistoryService | shared_preferences | 本地复制历史 |
+| 6 | models | 无 | Prompt / Category / Variable 实体 |

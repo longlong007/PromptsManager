@@ -1,0 +1,218 @@
+%% apps/flutter 模块依赖图
+%% 基于 lib/*.dart 的相对路径 import
+
+## 1. 模块总览
+
+```mermaid
+flowchart TB
+    subgraph Pub[pubspec 依赖]
+        direction LR
+        SB[supabase_flutter]
+        Prov[provider]
+        GR[go_router]
+        Prefs[shared_preferences]
+        Dotenv[flutter_dotenv]
+    end
+
+    main[main.dart] --> App[app.dart]
+    main --> AuthP[AuthProvider]
+    main --> PromptP[PromptProvider]
+    main --> Config[app_config.dart]
+
+    App --> GR
+    App --> Screens
+
+    subgraph Screens[screens]
+        Login[login_screen]
+        Dash[dashboard_screen]
+        List[prompt_list_screen]
+        Detail[prompt_detail_screen]
+        Cat[categories_screen]
+    end
+
+    Login --> AuthP
+    Dash --> AuthP & PromptP
+    List --> PromptP
+    Detail --> PromptP
+    Cat --> PromptP
+
+    AuthP --> SB
+    PromptP --> Repo[PromptRepository]
+    PromptP --> Repo
+    Repo --> SB
+
+    Detail --> AI[AiService]
+    AI --> SB
+
+    List --> Copy[CopyHistoryService]
+    Detail --> Copy
+    Copy --> Prefs
+
+    Repo --> PromptM[prompt.dart]
+    Repo --> CatM[category.dart]
+    PromptM --> VarM[variable.dart]
+
+    Config --> Dotenv
+
+    main -.-> Prov
+    Screens -.-> Prov
+```
+
+---
+
+## 2. Provider 与 Service 依赖
+
+```mermaid
+graph TD
+    AuthP[AuthProvider] --> SB[supabase_flutter.auth]
+
+    PromptP[PromptProvider] --> Repo[PromptRepository]
+    PromptP --> CatM[category.dart]
+    PromptP --> PromptM[prompt.dart]
+
+    Repo --> SB
+    Repo --> PromptM
+    Repo --> CatM
+
+    AI[AiService] --> SB
+
+    Copy[CopyHistoryService] --> Prefs[shared_preferences]
+```
+
+---
+
+## 3. Screen 页面依赖
+
+```mermaid
+graph LR
+    subgraph 路由
+        R1["/login"]
+        R2["/"]
+        R3["/prompts"]
+        R4["/prompts/:id"]
+        R5["/categories"]
+    end
+
+    R1 --> Login[login_screen]
+    R2 --> Dash[dashboard_screen]
+    R3 --> List[prompt_list_screen]
+    R4 --> Detail[prompt_detail_screen]
+    R5 --> Cat[categories_screen]
+
+    Login --> AuthP[AuthProvider]
+    Dash --> AuthP & PromptP[PromptProvider]
+    List --> PromptP
+    List --> Copy[CopyHistoryService]
+    Detail --> PromptP
+    Detail --> AI[AiService]
+    Detail --> Copy
+    Cat --> PromptP
+```
+
+---
+
+## 4. 数据模型关系
+
+```mermaid
+classDiagram
+    class Prompt {
+        +String id
+        +String userId
+        +String title
+        +String content
+        +String? categoryId
+        +List~String~ tags
+        +List~Variable~ variables
+        +int usageCount
+        +DateTime createdAt
+        +DateTime updatedAt
+        +fromJson()
+        +toInsertJson()
+    }
+
+    class Category {
+        +String id
+        +String userId
+        +String name
+        +String? parentId
+        +int sortOrder
+        +DateTime createdAt
+        +fromJson()
+        +toJson()
+        +copyWith()
+    }
+
+    class Variable {
+        +String name
+        +String description
+        +String? defaultValue
+        +fromJson()
+        +toJson()
+    }
+
+    class CopyHistoryEntry {
+        +String promptId
+        +String title
+        +String content
+        +DateTime copiedAt
+    }
+
+    Prompt "1" --> "*" Variable : variables
+    Category "1" --> "*" Category : parentId
+    Category "1" --> "*" Prompt : categoryId
+```
+
+---
+
+## 5. Supabase 表操作映射
+
+```mermaid
+flowchart TD
+    subgraph AuthProvider
+        SignIn[signInWithPassword]
+        SignUp[signUp]
+        SignOut[signOut]
+        Listen[onAuthStateChange]
+    end
+
+    subgraph PromptRepository
+        FP[fetchPrompts]
+        SP[searchPrompts]
+        CP[createPrompt]
+        UP[updatePrompt]
+        DP[deletePrompt]
+        IU[incrementUsageCount]
+        FC[fetchCategories]
+        CC[createCategory]
+        UC[updateCategory]
+        DC[deleteCategory]
+        RC[reorderCategories]
+    end
+
+    subgraph AiService
+        Opt[optimizePrompt]
+    end
+
+    SignIn & SignUp & SignOut --> AuthAPI[auth API]
+    Listen --> AuthAPI
+
+    FP & SP & CP & UP & DP & IU --> PromptsTable[prompts 表]
+    FC & CC & UC & DC & RC --> CatTable[categories 表]
+    Opt --> EdgeFn[optimize-prompt]
+```
+
+---
+
+## 6. 依赖层级表
+
+| 层级 | 模块 | 依赖 | 说明 |
+|------|------|------|------|
+| L1 | `main.dart` | `app.dart`, Provider, Supabase, dotenv | 应用启动与全局注入 |
+| L2 | `app.dart` | GoRouter, screens, AuthProvider | 路由定义与主题 |
+| L3 | `AuthProvider` | supabase_flutter | 会话状态 |
+| L3 | `PromptProvider` | PromptRepository | 业务状态聚合 |
+| L4 | screens | Provider, services | UI 与用户交互 |
+| L5 | `PromptRepository` | supabase_flutter, models | 数据库 CRUD |
+| L5 | `AiService` | supabase_flutter | Edge Function 调用 |
+| L5 | `CopyHistoryService` | shared_preferences | 设备本地历史 |
+| L6 | models | 无外部业务依赖 | 纯数据结构 |

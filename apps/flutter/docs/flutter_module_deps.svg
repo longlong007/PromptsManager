@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 901" font-family="-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif">
+<defs>
+<style><![CDATA[
+.title{font-size:25px;font-weight:800;fill:#0f172a}
+.sub{font-size:13px;fill:#475569}
+.section{font-size:14px;font-weight:800;fill:#334155}
+.txt{font-size:11px;fill:#334155}
+.small{font-size:10px;fill:#64748b}
+.node-title{font-size:13px;font-weight:800;fill:#0f172a}
+.node-desc{font-size:10.5px;fill:#475569}
+.edge-label{font-size:9.5px;fill:#64748b;font-style:italic}
+.legend{font-size:11px;fill:#334155}
+.group-label{font-size:12px;font-weight:800;fill:#475569;letter-spacing:.6px}
+]]></style>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+  <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+</marker>
+</defs>
+
+<text x="800" y="38" class="title" text-anchor="middle">Prompt Manager Flutter 模块依赖图</text>
+<text x="800" y="62" class="sub" text-anchor="middle">只展示 lib 自有模块；外部包不画。实线 = Dart import 硬依赖。</text>
+
+<rect x="40" y="82" width="1520" height="52" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="70" y1="106" x2="125" y2="106" stroke="#475569" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="140" y="110" class="legend">硬依赖：Dart import</text>
+<text x="810" y="110" class="small">扫描范围：apps/flutter/lib · 14 个模块 · 25 条边</text>
+
+<rect x="40" y="160" width="330" height="541" rx="14" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4"/>
+<text x="60" y="185" class="group-label">入口层 · lib</text>
+<rect x="405" y="160" width="310" height="541" rx="14" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4"/>
+<text x="425" y="185" class="group-label">页面层 · screens</text>
+<rect x="750" y="160" width="430" height="541" rx="14" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.4"/>
+<text x="770" y="185" class="group-label">状态与服务 · providers · services</text>
+<rect x="1215" y="160" width="345" height="541" rx="14" fill="#fdf2f8" stroke="#f9a8d4" stroke-width="1.4"/>
+<text x="1235" y="185" class="group-label">基础层 · models · config</text>
+
+<rect x="70" y="215" width="250" height="64" rx="9" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.4"/>
+<text x="84" y="239" class="node-title">main.dart</text>
+<text x="84" y="258" class="node-desc">应用启动入口</text>
+<text x="84" y="273" class="node-desc">初始化环境与 Provider</text>
+<rect x="70" y="305" width="250" height="70" rx="9" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.4"/>
+<text x="84" y="329" class="node-title">app.dart</text>
+<text x="84" y="348" class="node-desc">GoRouter 路由定义</text>
+<text x="84" y="363" class="node-desc">登录守卫与全局主题</text>
+<rect x="435" y="215" width="250" height="64" rx="9" fill="#ffedd5" stroke="#fb923c" stroke-width="1.4"/>
+<text x="449" y="239" class="node-title">login_screen.dart</text>
+<text x="449" y="258" class="node-desc">邮箱登录与注册</text>
+<rect x="435" y="305" width="250" height="64" rx="9" fill="#ffedd5" stroke="#fb923c" stroke-width="1.4"/>
+<text x="449" y="329" class="node-title">dashboard_screen.dart</text>
+<text x="449" y="348" class="node-desc">统计仪表盘与快捷入口</text>
+<rect x="435" y="395" width="250" height="70" rx="9" fill="#ffedd5" stroke="#fb923c" stroke-width="1.4"/>
+<text x="449" y="419" class="node-title">prompt_list_screen.dart</text>
+<text x="449" y="438" class="node-desc">搜索筛选与批量操作</text>
+<rect x="435" y="491" width="250" height="70" rx="9" fill="#ffedd5" stroke="#fb923c" stroke-width="1.4"/>
+<text x="449" y="515" class="node-title">prompt_detail_screen.dart</text>
+<text x="449" y="534" class="node-desc">新建编辑与 AI 优化</text>
+<rect x="435" y="587" width="250" height="64" rx="9" fill="#ffedd5" stroke="#fb923c" stroke-width="1.4"/>
+<text x="449" y="611" class="node-title">categories_screen.dart</text>
+<text x="449" y="630" class="node-desc">二级分类与拖拽排序</text>
+<rect x="780" y="215" width="250" height="64" rx="9" fill="#dcfce7" stroke="#34d399" stroke-width="1.4"/>
+<text x="794" y="239" class="node-title">auth_provider.dart</text>
+<text x="794" y="258" class="node-desc">登录会话状态管理</text>
+<rect x="780" y="305" width="250" height="70" rx="9" fill="#dcfce7" stroke="#34d399" stroke-width="1.4"/>
+<text x="794" y="329" class="node-title">prompt_provider.dart</text>
+<text x="794" y="348" class="node-desc">提示词与分类业务状态</text>
+<rect x="780" y="401" width="250" height="70" rx="9" fill="#dcfce7" stroke="#34d399" stroke-width="1.4"/>
+<text x="794" y="425" class="node-title">prompt_repository.dart</text>
+<text x="794" y="444" class="node-desc">Supabase 表 CRUD</text>
+<rect x="780" y="497" width="250" height="64" rx="9" fill="#dcfce7" stroke="#34d399" stroke-width="1.4"/>
+<text x="794" y="521" class="node-title">ai_service.dart</text>
+<text x="794" y="540" class="node-desc">调用 optimize-prompt</text>
+<rect x="780" y="587" width="250" height="64" rx="9" fill="#dcfce7" stroke="#34d399" stroke-width="1.4"/>
+<text x="794" y="611" class="node-title">copy_history_service.dart</text>
+<text x="794" y="630" class="node-desc">本地复制历史持久化</text>
+<rect x="1245" y="305" width="250" height="78" rx="9" fill="#fce7f3" stroke="#f472b6" stroke-width="1.4"/>
+<text x="1259" y="329" class="node-title">models</text>
+<text x="1259" y="348" class="node-desc">Prompt · Category · Variable</text>
+<rect x="1245" y="215" width="250" height="64" rx="9" fill="#fce7f3" stroke="#f472b6" stroke-width="1.4"/>
+<text x="1259" y="239" class="node-title">app_config.dart</text>
+<text x="1259" y="258" class="node-desc">读取环境变量与配置</text>
+
+<line x1="195" y1="279" x2="195" y2="305" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M320 247.0 C460 247.0, 1105 247.0, 1245 247.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M320 225.0 C460 225.0, 640 225.0, 780 225.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M320 269.0 C460 269.0, 640 315.0, 780 315.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M320 325.0 C460 325.0, 640 254.3, 780 254.3" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M320 315.0 C372 315.0, 383 247.0, 435 247.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M320 335.0 C372 335.0, 383 337.0, 435 337.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M320 345.0 C372 345.0, 383 430.0, 435 430.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M320 355.0 C372 355.0, 383 526.0, 435 526.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M320 365.0 C372 365.0, 383 619.0, 435 619.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 247.0 C728 247.0, 737 239.7, 780 239.7" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 315.0 C728 315.0, 737 269.0, 780 269.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 359.0 C728 359.0, 737 327.5, 780 327.5" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 430.0 C825 430.0, 1105 329.5, 1245 329.5" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 405.0 C728 405.0, 737 340.0, 780 340.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 455.0 C728 455.0, 737 597.0, 780 597.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 517.7 C825 517.7, 1105 358.5, 1245 358.5" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 501.0 C728 501.0, 737 352.5, 780 352.5" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 534.3 C728 534.3, 737 529.0, 780 529.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 551.0 C728 551.0, 737 641.0, 780 641.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 641.0 C825 641.0, 1105 373.0, 1245 373.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M685 597.0 C728 597.0, 737 365.0, 780 365.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M1030 340.0 C1127 340.0, 1148 315.0, 1245 315.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<line x1="905" y1="375" x2="905" y2="401" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M1030 436.0 C1127 436.0, 1148 344.0, 1245 344.0" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+<rect x="40" y="726" width="1520" height="150" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+<text x="65" y="753" class="section">读图说明</text>
+<text x="65" y="777" class="txt">主图以文件级模块展示 lib 目录 import 关系。所有依赖均为硬依赖（Dart import）。</text>
+<text x="65" y="801" class="txt">主要高扇出模块：app.dart(6)、main.dart(4)、prompt_detail_screen.dart(4)、prompt_list_screen.dart(3)。它们是架构上最容易形成耦合的编排入口。</text>
+<text x="65" y="825" class="txt">主要基础模块：prompt_provider.dart(5)、models(5)、auth_provider.dart(4)、copy_history_service.dart(2)。上层应依赖它们，反向依赖应避免。</text>
+<text x="65" y="849" class="txt">读图方向：箭头 A → B 表示 A 依赖 B。页面经 Provider 访问仓储，部分页面直接调用 Service。</text>
+</svg>

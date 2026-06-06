@@ -74,11 +74,17 @@ apps/flutter/
 │   ├── services/        # Supabase / AI / 复制历史
 │   ├── app.dart         # 路由与应用壳
 │   └── main.dart
+├── note/                # 架构文档（arch / dir / module）
 ├── android/
 ├── ios/
 ├── .env.example
 └── pubspec.yaml
 ```
+
+详细目录与架构说明见 `note/dir.md`、`note/arch.mmd`、`note/module.mmd`。
+
+- 分层架构图：`docs/flutter_arch.svg`（`python scripts/gen_flutter_arch_svg.py`）
+- 模块依赖图：`docs/flutter_module_deps.svg`（`python scripts/gen_flutter_module_deps_svg.py`）
 
 ## 与 Web 端数据同步
 

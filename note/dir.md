@@ -42,6 +42,24 @@ prompt-manager/
 │   │   ├── capacitor.config.ts        # webDir → ../web/dist
 │   │   └── android/                   # Android 原生工程
 │   │
+│   ├── flutter/                       # Flutter 原生移动端（Android / iOS）
+│   │   ├── README.md
+│   │   ├── pubspec.yaml               # Dart 依赖与资源声明
+│   │   ├── analysis_options.yaml
+│   │   ├── .env / .env.example        # Supabase 环境变量
+│   │   ├── note/                      # Flutter 子文档（arch / dir / module）
+│   │   ├── lib/
+│   │   │   ├── main.dart              # 入口：dotenv、Supabase、Provider
+│   │   │   ├── app.dart               # GoRouter 路由与应用壳
+│   │   │   ├── config/app_config.dart # 读取 .env，拼接 Edge Function URL
+│   │   │   ├── models/                # Prompt / Category / Variable
+│   │   │   ├── providers/             # AuthProvider / PromptProvider
+│   │   │   ├── screens/               # Login / Dashboard / List / Detail / Categories
+│   │   │   └── services/              # PromptRepository / AiService / CopyHistoryService
+│   │   ├── android/                   # Android 原生工程
+│   │   ├── ios/                       # iOS 原生工程
+│   │   └── test/widget_test.dart
+│   │
 │   ├── extension/                     # Chrome 浏览器扩展（MV3）
 │   │   ├── README.md
 │   │   ├── manifest.json              # MV3 源文件（构建时拷贝到 dist）
@@ -160,6 +178,28 @@ prompt-manager/
 | `capacitor.config.ts` | `webDir` 指向 `../web/dist`，复用 Web 构建产物 |
 | `android/` | Capacitor 生成的 Android 原生工程 |
 
+### Flutter 移动端 (`apps/flutter/`)
+
+| 模块 | 功能说明 |
+|------|----------|
+| `main.dart` | 应用入口：加载 `.env`、初始化 Supabase、注入 Provider |
+| `app.dart` | `GoRouter` 声明式路由、登录守卫、`MaterialApp` 主题 |
+| `config/app_config.dart` | 读取 `SUPABASE_URL` / `SUPABASE_ANON_KEY`，拼接 `optimize-prompt` URL |
+| `models/` | `Prompt`、`Category`、`Variable` 数据模型与 JSON 序列化 |
+| `providers/auth_provider.dart` | 邮箱登录 / 注册 / 登出，监听 `onAuthStateChange` |
+| `providers/prompt_provider.dart` | Prompt 与分类 CRUD、搜索、使用计数 |
+| `screens/login_screen.dart` | 登录 / 注册表单页 |
+| `screens/dashboard_screen.dart` | 首页仪表盘：统计卡片、最近 Prompt |
+| `screens/prompt_list_screen.dart` | 列表、搜索筛选、多选批量操作、复制历史 |
+| `screens/prompt_detail_screen.dart` | 新建 / 编辑 Prompt、AI 优化 |
+| `screens/categories_screen.dart` | 二级分类管理、拖拽排序 |
+| `services/prompt_repository.dart` | Supabase `prompts` / `categories` 表 CRUD |
+| `services/ai_service.dart` | 调用 `optimize-prompt` Edge Function |
+| `services/copy_history_service.dart` | `SharedPreferences` 本地复制历史（最多 50 条） |
+| `android/` / `ios/` | Flutter 原生平台工程 |
+
+Flutter 详细目录见 `apps/flutter/note/dir.md`。
+
 ### 浏览器扩展 (`apps/extension/`)
 
 | 模块 | 功能说明 |
@@ -223,10 +263,12 @@ prompt-manager/
 │  React 18    │ Tauri 2      │ Capacitor 7  │ Chrome MV3 + React       │
 │  Vite        │ 封装 web     │ 封装 web     │ 侧栏 / 右键 / 页面插入    │
 ├──────────────┴──────────────┴──────────────┴──────────────────────────┤
-│  apps/miniprogram                                                     │
-│  微信小程序原生框架 + TypeScript + wx.request 调用 Supabase REST       │
+│  apps/flutter              │  apps/miniprogram                        │
+│  Flutter 3 + Dart 3        │  微信小程序原生框架 + TypeScript          │
+│  Provider + go_router      │  wx.request 调用 Supabase REST           │
+│  supabase_flutter          │                                          │
 ├──────────────────────────────────────────────────────────────────────┤
-│  packages/shared    共享类型定义（web 可直接引用；extension/miniprogram 各自维护对齐副本）│
+│  packages/shared    共享类型定义（web 可直接引用；extension/miniprogram/flutter 各自维护对齐副本）│
 └──────────────────────────────────────────────────────────────────────┘
                                     ↓
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -252,6 +294,8 @@ prompt-manager/
 | `pnpm dev:extension` | 扩展 Vite 开发构建 |
 | `pnpm build:extension` | 扩展生产构建 → `apps/extension/dist` |
 | `pnpm typecheck:miniprogram` | 小程序 TypeScript 类型检查 |
+| `pnpm dev:flutter` | 启动 Flutter 开发（`flutter run`） |
+| `pnpm build:flutter:apk` | 构建 Flutter Android Release APK |
 
 ---
 
@@ -262,5 +306,6 @@ prompt-manager/
 | Web / Desktop / Mobile | `apps/web/.env` | `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY` |
 | Extension | `apps/extension/.env` | `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`、`VITE_SUPABASE_FUNCTION_URL`（可选） |
 | Miniprogram | `apps/miniprogram/config/config.ts` | `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_FUNCTION_URL` |
+| Flutter | `apps/flutter/.env` | `SUPABASE_URL`、`SUPABASE_ANON_KEY` |
 
 微信小程序还需在微信公众平台配置 Supabase 域名为 request 合法域名。

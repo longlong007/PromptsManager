@@ -8,6 +8,7 @@ graph TB
         Web[apps_web]
         Desktop[apps_desktop]
         Mobile[apps_mobile]
+        Flutter[apps_flutter]
         Extension[apps_extension]
         Mini[apps_miniprogram]
     end
@@ -27,6 +28,9 @@ graph TB
     Web --> Auth
     Web --> DB
     Web --> Fn
+    Flutter --> Auth
+    Flutter --> DB
+    Flutter --> Fn
     Extension --> Auth
     Extension --> DB
     Extension --> Fn
@@ -165,7 +169,56 @@ graph TB
 
 ---
 
-## 5. 数据库模型
+## 5. Flutter 应用架构
+
+```mermaid
+graph TB
+    subgraph FlutterApp[apps_flutter]
+        Main[main.dart]
+        AppDart[app.dart]
+        Router[GoRouter]
+
+        subgraph Screens[screens]
+            FLogin[login_screen]
+            FDashboard[dashboard_screen]
+            FList[prompt_list_screen]
+            FDetail[prompt_detail_screen]
+            FCategories[categories_screen]
+        end
+
+        subgraph Providers[providers]
+            FAuth[AuthProvider]
+            FPrompt[PromptProvider]
+        end
+
+        subgraph Services[services]
+            FRepo[PromptRepository]
+            FAI[AiService]
+            FCopy[CopyHistoryService]
+        end
+
+        subgraph Models[models]
+            FPromptModel[prompt.dart]
+            FCatModel[category.dart]
+            FVarModel[variable.dart]
+        end
+
+        Config[config_app_config.dart]
+        Local[SharedPreferences]
+    end
+
+    Main --> AppDart --> Router --> Screens
+    Screens --> Providers --> Services
+    Services --> Models
+    FRepo --> Supabase[(Supabase)]
+    FAI --> EdgeFn[optimize-prompt]
+    FCopy --> Local
+    Main --> Config
+```
+
+---
+
+## 6. 数据库模型
 
 ```mermaid
 erDiagram
@@ -204,7 +257,7 @@ erDiagram
 
 ---
 
-## 6. 跨端数据流
+## 7. 跨端数据流
 
 ```mermaid
 flowchart LR
@@ -212,6 +265,13 @@ flowchart LR
         WUI[React_Pages]
         WCtx[Context_状态]
         WAPI[supabase-js]
+    end
+
+    subgraph Flutter端[Flutter]
+        FUI[screens]
+        FProv[Provider_状态]
+        FLocal[SharedPreferences]
+        FAPI[supabase_flutter]
     end
 
     subgraph 扩展端[Extension]
@@ -234,6 +294,8 @@ flowchart LR
     end
 
     WUI --> WCtx --> WAPI
+    FUI --> FProv --> FAPI
+    FUI --> FLocal
     EUI --> EHook
     EHook --> ELocal
     EHook --> EAPI
@@ -243,6 +305,9 @@ flowchart LR
     WAPI --> Auth
     WAPI --> DB
     WAPI --> Fn
+    FAPI --> Auth
+    FAPI --> DB
+    FAPI --> Fn
     EAPI --> Auth
     EAPI --> DB
     EAPI --> Fn
@@ -253,7 +318,7 @@ flowchart LR
 
 ---
 
-## 7. 扩展消息流（页面插入 Prompt）
+## 8. 扩展消息流（页面插入 Prompt）
 
 ```mermaid
 sequenceDiagram
@@ -273,7 +338,7 @@ sequenceDiagram
 
 ---
 
-## 8. 技术栈总览
+## 9. 技术栈总览
 
 ```mermaid
 mindmap
@@ -288,9 +353,18 @@ mindmap
         桌面端
             Tauri_2
             Rust_WebView
-        移动端
+        移动端_Capacitor
             Capacitor_7
             Android
+            封装_Web
+        移动端_Flutter
+            Flutter_3
+            Dart_3
+            Provider
+            go_router
+            supabase_flutter
+            SharedPreferences
+            Material_3
         浏览器扩展
             Chrome_MV3
             React_Vite

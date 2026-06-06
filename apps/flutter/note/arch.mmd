@@ -1,0 +1,186 @@
+%% apps/flutter 架构图（Mermaid）
+%% 可在支持 Mermaid 的编辑器或 VS Code 插件中预览
+
+## 1. 应用分层架构
+
+```mermaid
+graph TB
+    subgraph Entry[入口层]
+        Main[main.dart]
+        Config[app_config.dart]
+        Dotenv[flutter_dotenv]
+    end
+
+    subgraph Shell[应用壳]
+        AppDart[app.dart]
+        Router[GoRouter]
+        Theme[MaterialApp_Material3]
+    end
+
+    subgraph UI[UI 层 screens]
+        Login[login_screen]
+        Dashboard[dashboard_screen]
+        List[prompt_list_screen]
+        Detail[prompt_detail_screen]
+        Categories[categories_screen]
+    end
+
+    subgraph State[状态层 providers]
+        AuthP[AuthProvider]
+        PromptP[PromptProvider]
+    end
+
+    subgraph Service[服务层 services]
+        Repo[PromptRepository]
+        AI[AiService]
+        Copy[CopyHistoryService]
+    end
+
+    subgraph Model[模型层 models]
+        PromptM[prompt.dart]
+        CatM[category.dart]
+        VarM[variable.dart]
+    end
+
+    subgraph Remote[远端 Supabase]
+        Auth[Auth]
+        DB[(PostgreSQL)]
+        Fn[optimize-prompt]
+    end
+
+    subgraph Local[本地存储]
+        Prefs[SharedPreferences]
+    end
+
+    Main --> Config --> Dotenv
+    Main --> AppDart --> Router --> Theme
+    Router --> UI
+    Main --> AuthP & PromptP
+    UI --> AuthP & PromptP
+    AuthP --> Auth
+    PromptP --> Repo & AI
+    Repo --> DB
+    AI --> Fn
+    Copy --> Prefs
+    UI --> Copy
+    Repo --> PromptM & CatM
+    PromptM --> VarM
+```
+
+---
+
+## 2. 认证与路由守卫
+
+```mermaid
+sequenceDiagram
+    participant User as 用户
+    participant Router as GoRouter
+    participant Auth as AuthProvider
+    participant SB as Supabase_Auth
+    participant Login as LoginScreen
+    participant Dash as DashboardScreen
+
+    User->>Router: 打开应用
+    Router->>Auth: isAuthenticated?
+    alt 未登录
+        Auth-->>Router: false
+        Router->>Login: redirect /login
+        User->>Login: 输入邮箱密码
+        Login->>Auth: signIn()
+        Auth->>SB: signInWithPassword
+        SB-->>Auth: Session
+        Auth->>Auth: notifyListeners()
+        Router->>Router: refreshListenable 触发重定向
+        Router->>Dash: redirect /
+    else 已登录
+        Auth-->>Router: true
+        Router->>Dash: 进入首页
+    end
+```
+
+---
+
+## 3. Prompt 数据流
+
+```mermaid
+flowchart LR
+    subgraph Screen
+        Dash[DashboardScreen]
+        List[PromptListScreen]
+        Detail[PromptDetailScreen]
+    end
+
+    subgraph Provider
+        PP[PromptProvider]
+    end
+
+    subgraph Repository
+        Repo[PromptRepository]
+    end
+
+    subgraph Supabase
+        T1[(prompts)]
+        T2[(categories)]
+        Fn[optimize-prompt]
+    end
+
+    Dash -->|loadAll| PP
+    List -->|search / delete / incrementUsage| PP
+    Detail -->|create / update| PP
+    Detail -->|optimizePrompt| AI[AiService]
+    PP --> Repo
+    Repo --> T1 & T2
+    AI --> Fn
+    PP -->|notifyListeners| Screen
+```
+
+---
+
+## 4. 复制 Prompt 流程
+
+```mermaid
+sequenceDiagram
+    participant User as 用户
+    participant List as PromptListScreen
+    participant Clip as Clipboard
+    participant Copy as CopyHistoryService
+    participant PP as PromptProvider
+    participant Repo as PromptRepository
+    participant DB as Supabase
+
+    User->>List: 点击复制
+    List->>Clip: setData(content)
+    List->>Copy: addEntry()
+    Copy->>Copy: SharedPreferences 写入
+    List->>PP: incrementUsage(id)
+    PP->>Repo: usage_count + 1
+    Repo->>DB: UPDATE prompts
+    List->>User: SnackBar 提示
+```
+
+---
+
+## 5. 技术栈
+
+```mermaid
+mindmap
+    root(apps_flutter)
+        框架
+            Flutter_3
+            Dart_3_12
+            Material_3
+        状态与路由
+            provider
+            go_router
+        后端
+            supabase_flutter
+            Supabase_Auth
+            PostgreSQL
+            Edge_Function
+        本地
+            shared_preferences
+            flutter_dotenv
+        平台
+            Android
+            iOS
+```
