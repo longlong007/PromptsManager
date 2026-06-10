@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { usePrompts } from '../contexts/PromptContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -25,6 +25,7 @@ export default function PromptDetailPage() {
   const [creatingCategory, setCreatingCategory] = useState(false)
 
   const isNew = id === 'new'
+  const loadedPromptIdRef = useRef<string | null>(null)
 
   const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return
@@ -42,16 +43,24 @@ export default function PromptDetailPage() {
   }
 
   useEffect(() => {
-    if (!isNew && id) {
-      const found = prompts.find(p => p.id === id)
-      if (found) {
-        setPrompt(found)
-        setTitle(found.title)
-        setContent(found.content)
-        setCategoryId(found.category_id || '')
-        setTags(found.tags.join(', '))
-      }
+    if (isNew || !id) {
+      loadedPromptIdRef.current = null
+      return
     }
+
+    const found = prompts.find(p => p.id === id)
+    if (!found) return
+
+    if (loadedPromptIdRef.current === id) {
+      return
+    }
+
+    loadedPromptIdRef.current = id
+    setPrompt(found)
+    setTitle(found.title)
+    setContent(found.content)
+    setCategoryId(found.category_id || '')
+    setTags(found.tags.join(', '))
   }, [id, prompts, isNew])
 
 
