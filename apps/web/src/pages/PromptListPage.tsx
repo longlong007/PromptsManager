@@ -7,7 +7,7 @@ import { Copy, Search, Plus, Edit2, Trash2, FolderOpen } from 'lucide-react'
 
 export default function PromptListPage() {
   const navigate = useNavigate()
-  const { prompts, categories, loading, deletePrompt, searchPrompts } = usePrompts()
+  const { prompts, categories, loading, deletePrompt, searchPrompts, incrementUsageCount } = usePrompts()
   const { user, loading: authLoading } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
@@ -44,6 +44,7 @@ export default function PromptListPage() {
   const handleCopy = async (prompt: Prompt) => {
     try {
       await navigator.clipboard.writeText(prompt.content)
+      await incrementUsageCount(prompt.id)
       setCopiedId(prompt.id)
       setTimeout(() => setCopiedId(null), 2000)
     } catch (err) {

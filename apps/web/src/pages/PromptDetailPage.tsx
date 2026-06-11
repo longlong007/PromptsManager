@@ -9,7 +9,7 @@ import { optimizePromptWithAI } from '../lib/supabase'
 export default function PromptDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { prompts, categories, updatePrompt, createPrompt, createCategory } = usePrompts()
+  const { prompts, categories, updatePrompt, createPrompt, createCategory, incrementUsageCount } = usePrompts()
   const { user, loading } = useAuth()
 
   const [prompt, setPrompt] = useState<Prompt | null>(null)
@@ -99,6 +99,9 @@ export default function PromptDetailPage() {
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(content)
+    if (prompt) {
+      await incrementUsageCount(prompt.id)
+    }
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

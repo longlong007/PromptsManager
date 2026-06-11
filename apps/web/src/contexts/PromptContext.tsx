@@ -17,6 +17,7 @@ interface PromptContextType {
   updateCategory: (id: string, input: Partial<CreateCategoryInput>) => Promise<{ error: Error | null }>
   deleteCategory: (id: string) => Promise<{ error: Error | null }>
   searchPrompts: (query: string, categoryId?: string, tags?: string[]) => Promise<void>
+  incrementUsageCount: (id: string) => Promise<void>
 }
 
 const PromptContext = createContext<PromptContextType | undefined>(undefined)
@@ -132,6 +133,30 @@ export function PromptProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const incrementUsageCount = async (id: string) => {
+    const prompt = prompts.find(p => p.id === id)
+    if (!prompt) return
+
+    try {
+      const { error } = await supabase
+        .from('prompts')
+        .update({
+          usage_count: prompt.usage_count + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+      if (error) throw error
+
+      setPrompts(prev =>
+        prev.map(p =>
+          p.id === id ? { ...p, usage_count: p.usage_count + 1 } : p
+        )
+      )
+    } catch {
+      // 统计失败不影响复制
+    }
+  }
+
   useEffect(() => {
     if (user) {
       fetchPrompts()
@@ -146,7 +171,7 @@ export function PromptProvider({ children }: { children: ReactNode }) {
     <PromptContext.Provider value={{
       prompts, categories, loading, error,
       fetchPrompts, fetchCategories, createPrompt, updatePrompt, deletePrompt,
-      createCategory, updateCategory, deleteCategory, searchPrompts
+      createCategory, updateCategory, deleteCategory, searchPrompts, incrementUsageCount
     }}>
       {children}
     </PromptContext.Provider>
