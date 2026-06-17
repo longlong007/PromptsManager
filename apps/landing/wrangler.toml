@@ -1,0 +1,16 @@
+# Cloudflare 静态站点部署配置
+# 纯静态资源，无 Worker 脚本（避免出现 Hello World 默认模板）
+#
+# 部署方式（在 apps/landing 目录）:
+#   pnpm build
+#   npx wrangler deploy
+#
+# 或在仓库根目录:
+#   pnpm build:landing
+#   cd apps/landing && npx wrangler deploy
+
+name = "promptrepo-landing"
+compatibility_date = "2024-01-01"
+
+[assets]
+directory = "./dist"

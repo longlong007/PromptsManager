@@ -8,6 +8,7 @@
     "build:web": "pnpm --filter web build",
     "dev:landing": "pnpm --filter landing dev",
     "build:landing": "pnpm --filter landing build",
+    "deploy:landing": "pnpm build:landing && pnpm --filter landing deploy",
     "dev:desktop": "pnpm --filter desktop dev",
     "build:desktop": "pnpm --filter desktop build",
     "dev:mobile": "pnpm --filter mobile dev",
