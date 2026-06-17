@@ -6,6 +6,8 @@
   "scripts": {
     "dev:web": "pnpm --filter web dev",
     "build:web": "pnpm --filter web build",
+    "dev:landing": "pnpm --filter landing dev",
+    "build:landing": "pnpm --filter landing build",
     "dev:desktop": "pnpm --filter desktop dev",
     "build:desktop": "pnpm --filter desktop build",
     "dev:mobile": "pnpm --filter mobile dev",

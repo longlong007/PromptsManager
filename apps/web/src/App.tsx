@@ -14,6 +14,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={<DashboardPage />} />
+            <Route path="/dashboard" element={<Navigate to="/" replace />} />
             <Route path="/prompts" element={<PromptListPage />} />
             <Route path="/prompts/:id" element={<PromptDetailPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
