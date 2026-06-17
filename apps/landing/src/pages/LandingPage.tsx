@@ -17,6 +17,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import AuroraBackground from '../components/AuroraBackground'
+import Footer from '../components/Footer'
 import ProductPreview from '../components/ProductPreview'
 import { APP_LOGIN_URL } from '../lib/appUrl'
 
@@ -440,17 +441,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="py-10 px-4 sm:px-6 border-t border-white/5">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-white" />
-            </div>
-            <span className="text-sm text-white/50">PromptRepo © 2026</span>
-          </div>
-          <p className="text-xs text-white/30">本地优先 · 不上传原文 · 可导出全部数据</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
